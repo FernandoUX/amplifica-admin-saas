@@ -10,9 +10,10 @@ import Pagination from "@/components/ui/Pagination";
 import Toggle from "@/components/ui/Toggle";
 import Toast from "@/components/ui/Toast";
 import CreateEmpresaModal from "@/components/empresas/CreateEmpresaModal";
+import RowMenu from "@/components/ui/RowMenu";
 import { MOCK_EMPRESAS } from "@/lib/mock-data";
 import { Empresa } from "@/lib/types";
-import { Building2, Plus, Search, MoreVertical } from "lucide-react";
+import { Building2, Plus, Search } from "lucide-react";
 
 const planBadgeVariant = (plan: string) => {
   if (plan === "Express") return "express";
@@ -89,6 +90,7 @@ export default function EmpresasPage() {
                   <thead>
                     <tr className="border-b border-neutral-100 bg-neutral-50">
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Nombre</th>
+                      <th className="w-8 py-2.5"></th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Razón Social</th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Planes</th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Contratos</th>
@@ -101,12 +103,14 @@ export default function EmpresasPage() {
                     {paginated.map((empresa) => (
                       <tr key={empresa.id} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-neutral-900">{empresa.nombre}</span>
-                            <button className="text-neutral-400 hover:text-neutral-600 transition-colors">
-                              <MoreVertical size={14} />
-                            </button>
-                          </div>
+                          <span className="text-sm font-medium text-neutral-900">{empresa.nombre}</span>
+                        </td>
+                        <td className="w-8 py-3 pr-2">
+                          <RowMenu actions={[
+                            { label: "Ver", onClick: () => {} },
+                            { label: "Editar", onClick: () => {} },
+                            { label: "Deshabilitar", onClick: () => handleToggle(empresa.id, false), variant: "danger" },
+                          ]} />
                         </td>
                         <td className="px-4 py-3 text-sm text-neutral-600">{empresa.razonSocial}</td>
                         <td className="px-4 py-3">

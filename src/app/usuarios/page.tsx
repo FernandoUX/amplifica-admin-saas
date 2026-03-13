@@ -14,7 +14,8 @@ import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import { MOCK_USUARIOS, MOCK_EMPRESAS, MOCK_TENANTS } from "@/lib/mock-data";
 import { Usuario } from "@/lib/types";
-import { Users, Plus, Search, MoreVertical } from "lucide-react";
+import RowMenu from "@/components/ui/RowMenu";
+import { Users, Plus, Search } from "lucide-react";
 
 export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState<Usuario[]>(MOCK_USUARIOS);
@@ -80,6 +81,7 @@ export default function UsuariosPage() {
                     <tr className="border-b border-neutral-100 bg-neutral-50">
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">ID</th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Nombres</th>
+                      <th className="w-8 py-2.5"></th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">E-mail</th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Tenant asociados</th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Roles</th>
@@ -93,10 +95,14 @@ export default function UsuariosPage() {
                       <tr key={i} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
                         <td className="px-4 py-3 text-sm font-mono text-neutral-500">{u.id}</td>
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-neutral-900">{u.nombres}</span>
-                            <button className="text-neutral-400 hover:text-neutral-600"><MoreVertical size={14} /></button>
-                          </div>
+                          <span className="text-sm font-medium text-neutral-900">{u.nombres}</span>
+                        </td>
+                        <td className="w-8 py-3 pr-2">
+                          <RowMenu actions={[
+                            { label: "Ver", onClick: () => {} },
+                            { label: "Editar", onClick: () => {} },
+                            { label: "Deshabilitar", onClick: () => setUsuarios((prev) => prev.map((x, j) => j === i ? { ...x, habilitado: false } : x)), variant: "danger" },
+                          ]} />
                         </td>
                         <td className="px-4 py-3 text-sm text-neutral-500">{u.email}</td>
                         <td className="px-4 py-3 text-sm text-neutral-600">{u.diasRestantes ? `${u.diasRestantes} días` : u.tenantId || "—"}</td>

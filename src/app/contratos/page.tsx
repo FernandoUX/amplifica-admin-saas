@@ -14,7 +14,8 @@ import Select from "@/components/ui/Select";
 import Input from "@/components/ui/Input";
 import { MOCK_CONTRATOS, MOCK_EMPRESAS, MOCK_TENANTS } from "@/lib/mock-data";
 import { Contrato } from "@/lib/types";
-import { FileText, Plus, Search, MoreVertical } from "lucide-react";
+import RowMenu from "@/components/ui/RowMenu";
+import { FileText, Plus, Search } from "lucide-react";
 
 const PLANES_OPTIONS = [
   { value: "Express", label: "Express" },
@@ -112,6 +113,7 @@ export default function ContratosPage() {
                     <tr className="border-b border-neutral-100 bg-neutral-50">
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">ID</th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Tenant asociado</th>
+                      <th className="w-8 py-2.5"></th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Nombre</th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Razón Social</th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Planes</th>
@@ -125,10 +127,14 @@ export default function ContratosPage() {
                       <tr key={`${c.id}-${i}`} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
                         <td className="px-4 py-3 text-sm font-mono text-neutral-500">{c.id}</td>
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-neutral-900">{c.tenantNombre}</span>
-                            <button className="text-neutral-400 hover:text-neutral-600"><MoreVertical size={14} /></button>
-                          </div>
+                          <span className="text-sm font-medium text-neutral-900">{c.tenantNombre}</span>
+                        </td>
+                        <td className="w-8 py-3 pr-2">
+                          <RowMenu actions={[
+                            { label: "Ver", onClick: () => {} },
+                            { label: "Editar", onClick: () => {} },
+                            { label: "Deshabilitar", onClick: () => setContratos((prev) => prev.map((x, j) => j === contratos.indexOf(c) ? { ...x, habilitado: false } : x)), variant: "danger" },
+                          ]} />
                         </td>
                         <td className="px-4 py-3 text-sm text-neutral-700">{c.nombre}</td>
                         <td className="px-4 py-3 text-sm text-neutral-600">{c.razonSocial}</td>

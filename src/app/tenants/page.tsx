@@ -15,7 +15,8 @@ import Select from "@/components/ui/Select";
 import Textarea from "@/components/ui/Textarea";
 import { MOCK_TENANTS, MOCK_EMPRESAS } from "@/lib/mock-data";
 import { Tenant } from "@/lib/types";
-import { Server, Plus, Search, MoreVertical } from "lucide-react";
+import RowMenu from "@/components/ui/RowMenu";
+import { Server, Plus, Search } from "lucide-react";
 
 const planBadgeVariant = (plan: string) => {
   if (plan === "Express") return "express";
@@ -100,6 +101,7 @@ export default function TenantsPage() {
                     <tr className="border-b border-neutral-100 bg-neutral-50">
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">ID</th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Razón Social</th>
+                      <th className="w-8 py-2.5"></th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Dominio</th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Couriers</th>
                       <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Planes</th>
@@ -113,10 +115,14 @@ export default function TenantsPage() {
                       <tr key={t.id} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
                         <td className="px-4 py-3 text-sm font-mono text-neutral-500">{t.id}</td>
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-neutral-900">{t.razonSocial}</span>
-                            <button className="text-neutral-400 hover:text-neutral-600"><MoreVertical size={14} /></button>
-                          </div>
+                          <span className="text-sm font-medium text-neutral-900">{t.razonSocial}</span>
+                        </td>
+                        <td className="w-8 py-3 pr-2">
+                          <RowMenu actions={[
+                            { label: "Ver", onClick: () => {} },
+                            { label: "Editar", onClick: () => {} },
+                            { label: "Deshabilitar", onClick: () => setTenants((prev) => prev.map((x) => x.id === t.id ? { ...x, habilitado: false } : x)), variant: "danger" },
+                          ]} />
                         </td>
                         <td className="px-4 py-3 text-sm text-neutral-500">{t.dominio}</td>
                         <td className="px-4 py-3">
