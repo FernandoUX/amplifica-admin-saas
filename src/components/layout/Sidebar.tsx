@@ -10,24 +10,22 @@ import {
   Server,
   Layers,
   FileText,
-  Truck,
   Receipt,
   Users,
-  Settings,
+  ShieldCheck,
   ChevronDown,
   Check,
   X,
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { label: "Empresas",      href: "/empresas",     icon: Building2,  ruta: "Empresas" },
-  { label: "Tenants",       href: "/tenants",      icon: Server,     ruta: "Tenants" },
-  { label: "Planes",        href: "/planes",       icon: Layers,     ruta: "Planes" },
-  { label: "Contratos",     href: "/contratos",    icon: FileText,   ruta: "Contratos" },
-  { label: "Couriers",      href: "/couriers",     icon: Truck,      ruta: "Couriers" },
-  { label: "Facturación",   href: "/facturacion",  icon: Receipt,    ruta: "Facturación" },
-  { label: "Usuarios",      href: "/usuarios",     icon: Users,      ruta: "Usuarios" },
-  { label: "Configuración", href: "/configuracion",icon: Settings,   ruta: "Configuración" },
+  { label: "Clientes",        href: "/clientes",       icon: Building2,  ruta: "Clientes" },
+  { label: "Tenants",         href: "/tenants",        icon: Server,     ruta: "Tenants" },
+  { label: "Planes",          href: "/planes",         icon: Layers,     ruta: "Planes" },
+  { label: "Contratos",       href: "/contratos",      icon: FileText,   ruta: "Contratos" },
+  { label: "Usuarios",        href: "/usuarios",       icon: Users,      ruta: "Usuarios" },
+  { label: "Reportes de uso", href: "/reportes",       icon: Receipt,    ruta: "Reportes" },
+  { label: "Audit Log",       href: "/auditlog",       icon: ShieldCheck, ruta: "Audit Log" },
 ];
 
 interface SidebarProps {

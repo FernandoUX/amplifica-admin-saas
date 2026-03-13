@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 
-const RUTAS = ["Dashboard", "Empresas", "Tenants", "Planes", "Contratos", "Couriers", "Facturación", "Usuarios", "Configuración"];
+const RUTAS = ["Clientes", "Tenants", "Planes", "Contratos", "Usuarios", "Reportes", "Audit Log"];
 
 export interface RolDef {
   id: string;
@@ -23,9 +23,9 @@ export const ROLES: RolDef[] = [
     nombre: "Comercial",
     iniciales: "CO",
     permisos: {
-      ver: ["Empresas", "Tenants", "Planes", "Contratos", "Usuarios"],
-      editar: ["Empresas", "Planes", "Contratos"],
-      crear: ["Empresas", "Planes", "Contratos"],
+      ver: ["Clientes", "Tenants", "Planes", "Contratos", "Usuarios"],
+      editar: ["Clientes", "Planes", "Contratos"],
+      crear: ["Clientes", "Planes", "Contratos"],
       deshabilitar: [],
     },
   },
@@ -34,7 +34,7 @@ export const ROLES: RolDef[] = [
     nombre: "Customer Success",
     iniciales: "CS",
     permisos: {
-      ver: ["Empresas", "Tenants", "Planes", "Contratos", "Usuarios", "Facturación"],
+      ver: ["Clientes", "Tenants", "Planes", "Contratos", "Usuarios", "Reportes"],
       editar: [],
       crear: [],
       deshabilitar: [],
@@ -45,7 +45,7 @@ export const ROLES: RolDef[] = [
     nombre: "Operaciones",
     iniciales: "OP",
     permisos: {
-      ver: ["Empresas", "Tenants", "Planes", "Usuarios", "Facturación"],
+      ver: ["Clientes", "Tenants", "Planes", "Usuarios", "Reportes"],
       editar: [],
       crear: [],
       deshabilitar: [],
@@ -56,7 +56,7 @@ export const ROLES: RolDef[] = [
     nombre: "Finanzas",
     iniciales: "FN",
     permisos: {
-      ver: ["Empresas", "Tenants", "Planes", "Contratos", "Facturación"],
+      ver: ["Clientes", "Tenants", "Planes", "Contratos", "Reportes"],
       editar: ["Contratos"],
       crear: ["Contratos"],
       deshabilitar: [],
