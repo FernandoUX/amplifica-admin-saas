@@ -44,7 +44,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       {/* Main content + mobile header */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Mobile header */}
-        <header className="flex h-14 flex-shrink-0 items-center justify-between border-b border-neutral-800 px-4 md:hidden" style={{ backgroundColor: "#1d1d1f" }}>
+        <header className="relative flex h-14 flex-shrink-0 items-center justify-between border-b border-neutral-800 px-4 md:hidden" style={{ backgroundColor: "#1d1d1f" }}>
           <button
             onClick={() => setSidebarOpen(true)}
             className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-300 hover:bg-white/10 transition-colors"
@@ -52,26 +52,32 @@ export default function MainLayout({ children }: MainLayoutProps) {
             <Menu size={20} />
           </button>
 
-          <Image
-            src="/logo-amplifica.svg"
-            alt="Amplifica"
-            width={100}
-            height={23}
-            className="h-[23px] w-auto"
-          />
+          {/* Centered logo */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <Image
+              src="/logo-amplifica.svg"
+              alt="Amplifica"
+              width={100}
+              height={23}
+              className="h-[23px] w-auto"
+            />
+          </div>
 
           {/* Role switcher */}
           <div ref={roleRef} className="relative">
             <button
               onClick={() => setRoleOpen((v) => !v)}
-              className="flex items-center gap-1 rounded-lg px-2 py-1.5 hover:bg-white/10 transition-colors"
+              className="flex items-center gap-1 rounded-lg px-1.5 py-1.5 hover:bg-white/10 transition-colors"
             >
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-700 text-[10px] font-semibold text-neutral-200">
-                {rol.iniciales}
+              {/* Avatar with badge overlapping bottom */}
+              <div className="relative pb-2.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-700 text-[10px] font-semibold text-neutral-200">
+                  {rol.iniciales}
+                </div>
+                <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap rounded bg-primary-400 px-1 py-0.5 text-[9px] font-semibold text-white leading-none">
+                  {rol.nombre}
+                </span>
               </div>
-              <span className="rounded bg-primary-100 px-1 py-0.5 text-[10px] font-semibold text-primary-700 leading-none">
-                {rol.nombre}
-              </span>
               <ChevronDown
                 size={13}
                 className={`text-neutral-500 transition-transform ${roleOpen ? "rotate-180" : ""}`}
