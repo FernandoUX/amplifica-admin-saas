@@ -102,7 +102,7 @@ export default function TenantsPage() {
     <MainLayout>
       <div className="flex flex-col min-h-full">
         <PageHeader
-          breadcrumb="Inicio / Tenant"
+          breadcrumb={[{ label: "Inicio", href: "/" }, { label: "Tenants" }]}
           title="Tenants"
           description="Administración y gestión de tenants con empresas"
           actions={

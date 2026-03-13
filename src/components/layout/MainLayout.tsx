@@ -8,9 +8,10 @@ import { useRole, ROLES } from "@/lib/role-context";
 
 interface MainLayoutProps {
   children: React.ReactNode;
+  narrow?: boolean;
 }
 
-export default function MainLayout({ children }: MainLayoutProps) {
+export default function MainLayout({ children, narrow = false }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [roleOpen, setRoleOpen] = useState(false);
   const roleRef = useRef<HTMLDivElement>(null);
@@ -115,7 +116,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto scroll-minimal pb-20 md:pb-0">
-          <div className="mx-auto max-w-[1440px]">
+          <div className={`mx-auto ${narrow ? "max-w-5xl" : "max-w-[1440px]"}`}>
             {children}
           </div>
         </main>

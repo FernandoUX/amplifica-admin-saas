@@ -129,7 +129,7 @@ export default function ContratosPage() {
     <MainLayout>
       <div className="flex flex-col min-h-full">
         <PageHeader
-          breadcrumb="Inicio / Contratos"
+          breadcrumb={[{ label: "Inicio", href: "/" }, { label: "Contratos" }]}
           title="Contratos"
           description="Administración y gestión de contratos asignados a tenants."
           actions={

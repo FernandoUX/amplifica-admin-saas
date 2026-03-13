@@ -140,7 +140,7 @@ export default function PlanesPage() {
     <MainLayout>
       <div className="flex flex-col min-h-full">
         <PageHeader
-          breadcrumb="Inicio / Roles"
+          breadcrumb={[{ label: "Inicio", href: "/" }, { label: "Planes" }]}
           title="Roles"
           description="Administración y gestión de roles para asignar a tenants."
           actions={

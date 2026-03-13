@@ -8,7 +8,7 @@ export default function FacturacionPage() {
     <MainLayout>
       <div className="flex flex-col min-h-full">
         <PageHeader
-          breadcrumb="Inicio / Facturación"
+          breadcrumb={[{ label: "Inicio", href: "/" }, { label: "Facturación" }]}
           title="Facturación"
           description="Administración y gestión de facturación."
         />

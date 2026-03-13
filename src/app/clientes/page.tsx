@@ -94,7 +94,7 @@ export default function EmpresasPage() {
     <MainLayout>
       <div className="flex flex-col min-h-full">
         <PageHeader
-          breadcrumb="Inicio / Clientes"
+          breadcrumb={[{ label: "Inicio", href: "/" }, { label: "Clientes" }]}
           title="Clientes"
           description="Administración y gestión de empresas con contratos"
           actions={

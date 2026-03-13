@@ -5,7 +5,7 @@ export default function AuditLogPage() {
   return (
     <MainLayout>
       <PageHeader
-        breadcrumb="Inicio / Audit Log"
+        breadcrumb={[{ label: "Inicio", href: "/" }, { label: "Audit Log" }]}
         title="Audit Log"
         description="Registro inmutable de todas las acciones realizadas en el sistema."
       />

@@ -8,7 +8,7 @@ export default function ConfiguracionPage() {
     <MainLayout>
       <div className="flex flex-col min-h-full">
         <PageHeader
-          breadcrumb="Inicio / Configuración"
+          breadcrumb={[{ label: "Inicio", href: "/" }, { label: "Configuración" }]}
           title="Configuración"
           description="Configuración general del panel de administración."
         />

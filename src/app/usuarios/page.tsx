@@ -87,7 +87,7 @@ export default function UsuariosPage() {
     <MainLayout>
       <div className="flex flex-col min-h-full">
         <PageHeader
-          breadcrumb="Inicio / Usuarios"
+          breadcrumb={[{ label: "Inicio", href: "/" }, { label: "Usuarios" }]}
           title="Usuarios"
           description="Administración y gestión de usuarios."
           actions={

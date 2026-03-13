@@ -5,7 +5,7 @@ export default function ReportesPage() {
   return (
     <MainLayout>
       <PageHeader
-        breadcrumb="Inicio / Reportes de uso"
+        breadcrumb={[{ label: "Inicio", href: "/" }, { label: "Reportes de uso" }]}
         title="Reportes de uso"
         description="Visualiza y exporta reportes de uso por tenant y período."
       />

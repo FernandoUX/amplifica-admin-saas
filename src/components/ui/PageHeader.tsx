@@ -1,5 +1,12 @@
+import Link from "next/link";
+
+interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
 interface PageHeaderProps {
-  breadcrumb?: string;
+  breadcrumb?: BreadcrumbItem[];
   title: string;
   description?: string;
   actions?: React.ReactNode;
@@ -11,8 +18,21 @@ export default function PageHeader({ breadcrumb, title, description, actions, st
     <>
       <div className="flex flex-col gap-3 px-4 sm:px-6 pt-5 pb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="flex flex-col gap-0.5">
-          {breadcrumb && (
-            <p className="text-xs text-neutral-400">{breadcrumb}</p>
+          {breadcrumb && breadcrumb.length > 0 && (
+            <nav className="flex items-center gap-1 text-xs text-neutral-400">
+              {breadcrumb.map((item, i) => (
+                <span key={i} className="flex items-center gap-1">
+                  {i > 0 && <span>/</span>}
+                  {item.href ? (
+                    <Link href={item.href} className="hover:text-neutral-600 transition-colors">
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <span>{item.label}</span>
+                  )}
+                </span>
+              ))}
+            </nav>
           )}
           <h1 className="text-xl font-bold text-neutral-900">{title}</h1>
           {description && (

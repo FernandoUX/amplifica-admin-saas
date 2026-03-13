@@ -8,7 +8,7 @@ export default function CouriersPage() {
     <MainLayout>
       <div className="flex flex-col min-h-full">
         <PageHeader
-          breadcrumb="Inicio / Couriers"
+          breadcrumb={[{ label: "Inicio", href: "/" }, { label: "Couriers" }]}
           title="Couriers"
           description="Administración y gestión de couriers."
         />
