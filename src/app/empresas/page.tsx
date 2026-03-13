@@ -56,8 +56,16 @@ export default function EmpresasPage() {
     setToast(true);
   };
 
-  const handleToggle = (id: string, val: boolean) => {
-    setEmpresas((prev) => prev.map((e) => (e.id === id ? { ...e, habilitado: val } : e)));
+  const handleToggle = (empresa: Empresa, val: boolean) => {
+    if (!val) {
+      // Desactivar → abrir modal de alerta
+      setAlertEmpresa(empresa);
+    } else {
+      // Activar → directo
+      setEmpresas((prev) => prev.map((e) => (e.id === empresa.id ? { ...e, habilitado: true, estado: "Activo" } : e)));
+      setToastMsg({ title: "Empresa habilitada", message: `"${empresa.nombre}" ha sido habilitada.` });
+      setToast(true);
+    }
   };
 
   const handleSaveEdit = () => {
@@ -154,7 +162,7 @@ export default function EmpresasPage() {
                           <Badge variant={empresa.estado === "Activo" ? "active" : "inactive"}>{empresa.estado}</Badge>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <Toggle checked={empresa.habilitado} onChange={(v) => handleToggle(empresa.id, v)} />
+                          <Toggle checked={empresa.habilitado} onChange={(v) => handleToggle(empresa, v)} disabled={!canDeshabilitar("Empresas")} />
                         </td>
                       </tr>
                     ))}
