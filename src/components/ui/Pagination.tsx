@@ -24,7 +24,7 @@ export default function Pagination({
   const to = Math.min(page * pageSize, total);
 
   return (
-    <div className="flex items-center justify-end gap-3 border-t border-neutral-100 px-6 py-3">
+    <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 border-t border-neutral-100 px-4 sm:px-6 py-3">
       {onPageSizeChange && (
         <div className="flex items-center gap-2">
           <span className="text-xs text-neutral-500">Mostrar</span>

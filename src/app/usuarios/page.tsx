@@ -12,12 +12,11 @@ import Toast from "@/components/ui/Toast";
 import Modal from "@/components/ui/Modal";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
-import AlertModal from "@/components/ui/AlertModal";
-import { MOCK_USUARIOS, MOCK_EMPRESAS, MOCK_TENANTS } from "@/lib/mock-data";
+import { AlertTriangle, Building2 as BuildingIcon, Server as ServerIcon, FileText as FileTextIcon, Users, Plus, Search } from "lucide-react";
+import { MOCK_USUARIOS, MOCK_EMPRESAS, MOCK_TENANTS, MOCK_CONTRATOS } from "@/lib/mock-data";
 import { Usuario } from "@/lib/types";
 import RowMenu from "@/components/ui/RowMenu";
 import { useRole } from "@/lib/role-context";
-import { Users, Plus, Search } from "lucide-react";
 
 const readOnlyField = (label: string, value: string) => (
   <div>
@@ -92,17 +91,19 @@ export default function UsuariosPage() {
           title="Usuarios"
           description="Administración y gestión de usuarios."
           actions={
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                <input className="h-8 w-56 rounded-lg border border-neutral-300 pl-8 pr-3 text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400" placeholder="Busca por nombre, e-mail o rol" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
-              </div>
-              {canCrear("Usuarios") && <Button size="md" icon={<Plus size={14} />} onClick={() => setModalOpen(true)}>Crear</Button>}
+            <div className="relative w-full sm:w-auto">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+              <input className="h-8 w-full sm:w-56 rounded-lg border border-neutral-300 pl-8 pr-3 text-base md:text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400" placeholder="Busca por nombre, e-mail o rol" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
             </div>
+          }
+          stickyMobileAction={
+            canCrear("Usuarios")
+              ? <Button size="lg" className="w-full" icon={<Plus size={14} />} onClick={() => setModalOpen(true)}>Crear usuario</Button>
+              : undefined
           }
         />
 
-        <div className="flex-1 px-6 pb-6">
+        <div className="flex-1 px-4 sm:px-6 pb-6">
           {filtered.length === 0 && !search ? (
             <EmptyState icon={<Users size={24} />} title="No tienes usuarios creados aún" onCreateClick={() => setModalOpen(true)} />
           ) : (
@@ -146,7 +147,14 @@ export default function UsuariosPage() {
                           <Badge variant={u.estado === "Activo" ? "active" : "inactive"}>{u.estado}</Badge>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <Toggle checked={u.habilitado} onChange={(v) => setUsuarios((prev) => prev.map((x, j) => (x.id === u.id && x.email === u.email) ? { ...x, habilitado: v } : x))} />
+                          <Toggle
+                            checked={u.habilitado}
+                            onChange={(v) => {
+                              if (!v) setAlertUsuario(u);
+                              else setUsuarios((prev) => prev.map((x) => (x.id === u.id && x.email === u.email) ? { ...x, habilitado: true, estado: "Activo" as const } : x));
+                            }}
+                            disabled={!canDeshabilitar("Usuarios")}
+                          />
                         </td>
                       </tr>
                     ))}
@@ -215,15 +223,92 @@ export default function UsuariosPage() {
         )}
       </Modal>
 
-      {/* Disable Alert */}
-      <AlertModal
-        open={!!alertUsuario}
-        onClose={() => setAlertUsuario(null)}
-        onConfirm={handleDisable}
-        title="Deshabilitar usuario"
-        message={`¿Estás seguro de que deseas deshabilitar a "${alertUsuario?.nombres}"? Esta acción se puede revertir más adelante.`}
-        confirmLabel="Deshabilitar"
-      />
+      {/* Disable — rich confirmation */}
+      {alertUsuario && (() => {
+        const empresa = MOCK_EMPRESAS.find((e) => e.id === alertUsuario.empresaId);
+        const tenant = MOCK_TENANTS.find((t) => t.id === alertUsuario.tenantId);
+        const contratos = MOCK_CONTRATOS.filter((c) => c.empresaId === alertUsuario.empresaId);
+        const contratosVigentes = contratos.filter((c) => c.estado === "Al día" || c.estado === "Por vencer");
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setAlertUsuario(null)} />
+            <div className="relative z-10 w-full max-w-md rounded-2xl bg-white shadow-xl mx-4 p-6">
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+                  <AlertTriangle size={24} className="text-red-500" />
+                </div>
+                <h3 className="text-base font-semibold text-neutral-900">Deshabilitar usuario</h3>
+                <p className="text-sm text-neutral-500">
+                  ¿Estás seguro de que deseas deshabilitar a <strong className="text-neutral-700">&quot;{alertUsuario.nombres} {alertUsuario.apellidos}&quot;</strong>?
+                </p>
+              </div>
+
+              {/* Empresa */}
+              <div className="mt-4">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <BuildingIcon size={13} className="text-neutral-400" />
+                  <span className="text-xs font-semibold text-neutral-600">Empresa</span>
+                </div>
+                {empresa ? (
+                  <div className="rounded-lg border border-neutral-200 px-3 py-2 flex items-center justify-between">
+                    <span className="text-sm font-medium text-neutral-800">{empresa.razonSocial}</span>
+                    <Badge variant={empresa.estado === "Activo" ? "active" : "inactive"}>{empresa.estado}</Badge>
+                  </div>
+                ) : (
+                  <p className="text-xs text-neutral-400 italic">Sin empresa asociada</p>
+                )}
+              </div>
+
+              {/* Tenant */}
+              <div className="mt-3">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <ServerIcon size={13} className="text-neutral-400" />
+                  <span className="text-xs font-semibold text-neutral-600">Tenant</span>
+                </div>
+                {tenant ? (
+                  <div className="rounded-lg border border-neutral-200 px-3 py-2 flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-neutral-800">{tenant.nombre}</span>
+                      <span className="text-[11px] text-neutral-400">ID: {tenant.id}</span>
+                    </div>
+                    <Badge variant={tenant.estado === "Activo" ? "active" : "inactive"}>{tenant.estado}</Badge>
+                  </div>
+                ) : (
+                  <p className="text-xs text-neutral-400 italic">Sin tenant asociado</p>
+                )}
+              </div>
+
+              {/* Contratos vigentes */}
+              <div className="mt-3">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <FileTextIcon size={13} className="text-neutral-400" />
+                  <span className="text-xs font-semibold text-neutral-600">Contratos vigentes ({contratosVigentes.length})</span>
+                </div>
+                {contratosVigentes.length > 0 ? (
+                  <div className="rounded-lg border border-neutral-200 divide-y divide-neutral-100">
+                    {contratosVigentes.map((c) => (
+                      <div key={c.id} className="flex items-center justify-between px-3 py-2">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-neutral-800">{c.nombre}</span>
+                          <span className="text-[11px] text-neutral-400">Vence: {c.fechaVencimiento}</span>
+                        </div>
+                        <Badge variant={c.estado === "Al día" ? "active" : "pending"}>{c.estado}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-neutral-400 italic">Sin contratos vigentes</p>
+                )}
+              </div>
+
+              <div className="flex w-full gap-3 mt-5">
+                <Button variant="secondary" className="flex-1" onClick={() => setAlertUsuario(null)}>Cancelar</Button>
+                <Button variant="danger" className="flex-1" onClick={() => { handleDisable(); }}>Deshabilitar</Button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <Toast open={toast} onClose={() => setToast(false)} type="success" title={toastMsg.title} message={toastMsg.message} />
     </MainLayout>

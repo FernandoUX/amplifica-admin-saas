@@ -98,22 +98,24 @@ export default function EmpresasPage() {
           title="Empresas"
           description="Administración y gestión de empresas con contratos"
           actions={
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                <input
-                  className="h-8 w-56 rounded-lg border border-neutral-300 pl-8 pr-3 text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
-                  placeholder="Busca por nombre o razón social"
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                />
-              </div>
-              {canCrear("Empresas") && <Button size="md" icon={<Plus size={14} />} onClick={() => setModalOpen(true)}>Crear</Button>}
+            <div className="relative w-full sm:w-auto">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+              <input
+                className="h-8 w-full sm:w-56 rounded-lg border border-neutral-300 pl-8 pr-3 text-base md:text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
+                placeholder="Busca por nombre o razón social"
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              />
             </div>
+          }
+          stickyMobileAction={
+            canCrear("Empresas")
+              ? <Button size="lg" className="w-full" icon={<Plus size={14} />} onClick={() => setModalOpen(true)}>Crear empresa</Button>
+              : undefined
           }
         />
 
-        <div className="flex-1 px-6 pb-6">
+        <div className="flex-1 px-4 sm:px-6 pb-6">
           {filtered.length === 0 && !search ? (
             <EmptyState icon={<Building2 size={24} />} title="No tienes empresas creadas aún" onCreateClick={() => setModalOpen(true)} />
           ) : (

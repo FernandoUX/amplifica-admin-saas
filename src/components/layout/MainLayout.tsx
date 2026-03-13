@@ -114,7 +114,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto scroll-minimal">
+        <main className="flex-1 overflow-y-auto scroll-minimal pb-20 md:pb-0">
           <div className="mx-auto max-w-[1440px]">
             {children}
           </div>

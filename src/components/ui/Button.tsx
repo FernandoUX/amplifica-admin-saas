@@ -26,7 +26,7 @@ const sizeClasses: Record<Size, string> = {
   xs:  "h-6 px-2 text-[11px] gap-1",
   sm:  "h-7 px-3 text-xs gap-1.5",
   md:  "h-8 px-3.5 text-[14px] md:text-sm gap-2",
-  lg:  "h-10 px-4 text-[14px] md:text-sm gap-2",
+  lg:  "h-10 md:h-11 px-4 md:px-5 text-[14px] md:text-sm gap-2",
   xl:  "h-11 px-5 text-[14px] gap-2",
   "2xl": "h-12 px-6 text-[14px] gap-2.5",
 };
