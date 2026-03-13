@@ -101,7 +101,7 @@ export default function EmpresasPage() {
             <div className="relative w-full sm:w-auto">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
               <input
-                className="h-8 w-full sm:w-56 rounded-lg border border-neutral-300 pl-8 pr-3 text-base md:text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
+                className="h-[44px] w-full sm:min-w-[320px] rounded-lg border border-neutral-300 pl-8 pr-3 text-base md:text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
                 placeholder="Busca por nombre o razón social"
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}

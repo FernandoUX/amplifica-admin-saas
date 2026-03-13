@@ -93,7 +93,7 @@ export default function UsuariosPage() {
           actions={
             <div className="relative w-full sm:w-auto">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-              <input className="h-8 w-full sm:w-56 rounded-lg border border-neutral-300 pl-8 pr-3 text-base md:text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400" placeholder="Busca por nombre, e-mail o rol" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+              <input className="h-[44px] w-full sm:min-w-[320px] rounded-lg border border-neutral-300 pl-8 pr-3 text-base md:text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400" placeholder="Busca por nombre, e-mail o rol" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
             </div>
           }
           stickyMobileAction={
@@ -128,7 +128,7 @@ export default function UsuariosPage() {
                       <tr key={`${u.id}-${u.email}-${i}`} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
                         <td className="px-4 py-3 text-sm font-mono text-neutral-500">{u.id}</td>
                         <td className="px-4 py-3">
-                          <span className="text-sm font-medium text-neutral-900">{u.nombres}</span>
+                          <span className="text-sm font-medium text-neutral-900">{u.nombres} {u.apellidos}</span>
                         </td>
                         <td className="w-8 py-3 pr-2">
                           <RowMenu actions={[
@@ -228,7 +228,7 @@ export default function UsuariosPage() {
         const empresa = MOCK_EMPRESAS.find((e) => e.id === alertUsuario.empresaId);
         const tenant = MOCK_TENANTS.find((t) => t.id === alertUsuario.tenantId);
         const contratos = MOCK_CONTRATOS.filter((c) => c.empresaId === alertUsuario.empresaId);
-        const contratosVigentes = contratos.filter((c) => c.estado === "Al día" || c.estado === "Por vencer");
+        const contratosVigentes = contratos.filter((c) => (c.estado as string) !== "Vencido" && (c.estado as string) !== "Inactivo");
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setAlertUsuario(null)} />
