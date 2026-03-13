@@ -19,21 +19,48 @@ export const ROLES: RolDef[] = [
     permisos: { ver: [...RUTAS], editar: [...RUTAS], crear: [...RUTAS], deshabilitar: [...RUTAS] },
   },
   {
-    id: "staff",
-    nombre: "Staff Amplifica SaaS",
-    iniciales: "ST",
+    id: "comercial",
+    nombre: "Comercial",
+    iniciales: "CO",
     permisos: {
-      ver: [...RUTAS],
-      editar: ["Empresas", "Tenants", "Contratos", "Couriers", "Usuarios"],
-      crear: ["Empresas", "Tenants", "Contratos", "Usuarios"],
-      deshabilitar: ["Empresas", "Tenants", "Contratos", "Usuarios"],
+      ver: ["Empresas", "Tenants", "Planes", "Contratos", "Usuarios"],
+      editar: ["Empresas", "Planes", "Contratos"],
+      crear: ["Empresas", "Planes", "Contratos"],
+      deshabilitar: [],
+    },
+  },
+  {
+    id: "cs",
+    nombre: "Customer Success",
+    iniciales: "CS",
+    permisos: {
+      ver: ["Empresas", "Tenants", "Planes", "Contratos", "Usuarios", "Facturación"],
+      editar: [],
+      crear: [],
+      deshabilitar: [],
+    },
+  },
+  {
+    id: "operaciones",
+    nombre: "Operaciones",
+    iniciales: "OP",
+    permisos: {
+      ver: ["Empresas", "Tenants", "Planes", "Usuarios", "Facturación"],
+      editar: [],
+      crear: [],
+      deshabilitar: [],
     },
   },
   {
     id: "finanzas",
-    nombre: "Finanzas SaaS",
+    nombre: "Finanzas",
     iniciales: "FN",
-    permisos: { ver: [...RUTAS], editar: [], crear: [], deshabilitar: [] },
+    permisos: {
+      ver: ["Empresas", "Tenants", "Planes", "Contratos", "Facturación"],
+      editar: ["Contratos"],
+      crear: ["Contratos"],
+      deshabilitar: [],
+    },
   },
 ];
 
