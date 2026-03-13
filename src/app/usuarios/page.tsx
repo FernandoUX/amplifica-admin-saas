@@ -292,7 +292,7 @@ export default function UsuariosPage() {
                           <span className="text-sm font-medium text-neutral-800">{c.nombre}</span>
                           <span className="text-[11px] text-neutral-400">Vence: {c.fechaVencimiento}</span>
                         </div>
-                        <Badge variant={c.estado === "Al día" ? "active" : "pending"}>{c.estado}</Badge>
+                        <Badge variant={(c.estado as string) === "Al día" ? "active" : "pending"}>{c.estado}</Badge>
                       </div>
                     ))}
                   </div>
