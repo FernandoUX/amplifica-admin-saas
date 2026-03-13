@@ -13,9 +13,11 @@ import Modal from "@/components/ui/Modal";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Textarea from "@/components/ui/Textarea";
+import AlertModal from "@/components/ui/AlertModal";
 import { MOCK_TENANTS, MOCK_EMPRESAS } from "@/lib/mock-data";
 import { Tenant } from "@/lib/types";
 import RowMenu from "@/components/ui/RowMenu";
+import { useRole } from "@/lib/role-context";
 import { Server, Plus, Search } from "lucide-react";
 
 const planBadgeVariant = (plan: string) => {
@@ -25,14 +27,28 @@ const planBadgeVariant = (plan: string) => {
   return "default";
 };
 
+const readOnlyField = (label: string, value: string) => (
+  <div>
+    <label className="text-xs font-semibold text-neutral-700 block mb-1">{label}</label>
+    <p className="text-sm text-neutral-900 bg-neutral-50 rounded-lg px-3 py-2 border border-neutral-200">{value || "—"}</p>
+  </div>
+);
+
 export default function TenantsPage() {
+  const { canCrear, canEditar, canDeshabilitar } = useRole();
   const [tenants, setTenants] = useState<Tenant[]>(MOCK_TENANTS);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [modalOpen, setModalOpen] = useState(false);
   const [toast, setToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState({ type: "success" as "success" | "error", title: "", message: "" });
   const [form, setForm] = useState({ empresaId: "", nombre: "", dominio: "", pais: "Chile", zonaHoraria: "", moneda: "", nota: "" });
+
+  // Row menu states
+  const [viewTenant, setViewTenant] = useState<Tenant | null>(null);
+  const [editTenant, setEditTenant] = useState<Tenant | null>(null);
+  const [alertTenant, setAlertTenant] = useState<Tenant | null>(null);
 
   const filtered = tenants.filter((t) =>
     `${t.nombre} ${t.razonSocial} ${t.dominio}`.toLowerCase().includes(search.toLowerCase())
@@ -60,9 +76,26 @@ export default function TenantsPage() {
       habilitado: true,
     };
     setTenants((prev) => [nuevo, ...prev]);
+    setToastMsg({ type: "success", title: "¡Tenant creado!", message: "Tenant se ha creado correctamente." });
     setToast(true);
     setModalOpen(false);
     setForm({ empresaId: "", nombre: "", dominio: "", pais: "Chile", zonaHoraria: "", moneda: "", nota: "" });
+  };
+
+  const handleSaveEdit = () => {
+    if (!editTenant) return;
+    setTenants((prev) => prev.map((t) => (t.id === editTenant.id ? editTenant : t)));
+    setToastMsg({ type: "success", title: "¡Tenant actualizado!", message: "Los cambios se guardaron correctamente." });
+    setToast(true);
+    setEditTenant(null);
+  };
+
+  const handleDisable = () => {
+    if (!alertTenant) return;
+    setTenants((prev) => prev.map((t) => (t.id === alertTenant.id ? { ...t, habilitado: false, estado: "Inactivo" as const } : t)));
+    setToastMsg({ type: "success", title: "Tenant deshabilitado", message: `"${alertTenant.nombre}" ha sido deshabilitado.` });
+    setToast(true);
+    setAlertTenant(null);
   };
 
   return (
@@ -83,9 +116,7 @@ export default function TenantsPage() {
                   onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 />
               </div>
-              <Button size="md" icon={<Plus size={14} />} onClick={() => setModalOpen(true)}>
-                Crear
-              </Button>
+              {canCrear("Tenants") && <Button size="md" icon={<Plus size={14} />} onClick={() => setModalOpen(true)}>Crear</Button>}
             </div>
           }
         />
@@ -119,9 +150,9 @@ export default function TenantsPage() {
                         </td>
                         <td className="w-8 py-3 pr-2">
                           <RowMenu actions={[
-                            { label: "Ver", onClick: () => {} },
-                            { label: "Editar", onClick: () => {} },
-                            { label: "Deshabilitar", onClick: () => setTenants((prev) => prev.map((x) => x.id === t.id ? { ...x, habilitado: false } : x)), variant: "danger" },
+                            { label: "Ver", onClick: () => setViewTenant(t) },
+                            ...(canEditar("Tenants") ? [{ label: "Editar", onClick: () => setEditTenant({ ...t }) }] : []),
+                            ...(canDeshabilitar("Tenants") ? [{ label: "Deshabilitar", onClick: () => setAlertTenant(t), variant: "danger" as const }] : []),
                           ]} />
                         </td>
                         <td className="px-4 py-3 text-sm text-neutral-500">{t.dominio}</td>
@@ -153,6 +184,7 @@ export default function TenantsPage() {
         </div>
       </div>
 
+      {/* Create Modal */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Tenants" subtitle="Complete los siguientes datos para crear empresa">
         <div className="flex flex-col gap-4">
           <Select label="Empresa asociada" placeholder="Seleccione" value={form.empresaId} onChange={(e) => set("empresaId", e.target.value)} options={MOCK_EMPRESAS.map((e) => ({ value: e.id, label: e.razonSocial }))} />
@@ -168,7 +200,47 @@ export default function TenantsPage() {
         </div>
       </Modal>
 
-      <Toast open={toast} onClose={() => setToast(false)} type="success" title="¡Tenant creado!" message="Tenant se ha creado correctamente." />
+      {/* View Modal (read-only) */}
+      <Modal open={!!viewTenant} onClose={() => setViewTenant(null)} title="Detalle de Tenant" subtitle="Información del tenant en modo lectura">
+        {viewTenant && (
+          <div className="flex flex-col gap-4">
+            {readOnlyField("Nombre", viewTenant.nombre)}
+            {readOnlyField("Dominio", viewTenant.dominio)}
+            {readOnlyField("País", viewTenant.pais)}
+            {readOnlyField("Zona horaria", viewTenant.zonaHoraria)}
+            {readOnlyField("Moneda", viewTenant.moneda)}
+            {readOnlyField("Nota", viewTenant.nota || "")}
+          </div>
+        )}
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal open={!!editTenant} onClose={() => setEditTenant(null)} title="Editar Tenant" subtitle="Modifique los datos del tenant">
+        {editTenant && (
+          <div className="flex flex-col gap-4">
+            <Input label="Nombre" value={editTenant.nombre} onChange={(e) => setEditTenant({ ...editTenant, nombre: e.target.value })} />
+            <Input label="Dominio" value={editTenant.dominio} onChange={(e) => setEditTenant({ ...editTenant, dominio: e.target.value })} />
+            <Input label="País" value={editTenant.pais} onChange={(e) => setEditTenant({ ...editTenant, pais: e.target.value })} />
+            <Input label="Zona horaria" value={editTenant.zonaHoraria} onChange={(e) => setEditTenant({ ...editTenant, zonaHoraria: e.target.value })} />
+            <Input label="Moneda" value={editTenant.moneda} onChange={(e) => setEditTenant({ ...editTenant, moneda: e.target.value })} />
+            <Input label="Nota" value={editTenant.nota || ""} onChange={(e) => setEditTenant({ ...editTenant, nota: e.target.value })} />
+            <Button className="w-full mt-2" onClick={handleSaveEdit}>Guardar cambios</Button>
+          </div>
+        )}
+      </Modal>
+
+      {/* Alert Modal (disable confirmation) */}
+      <AlertModal
+        open={!!alertTenant}
+        onClose={() => setAlertTenant(null)}
+        onConfirm={handleDisable}
+        title="Deshabilitar tenant"
+        message={`¿Estás seguro de que deseas deshabilitar "${alertTenant?.nombre}"? Esta acción se puede revertir más adelante.`}
+        confirmLabel="Deshabilitar"
+        cancelLabel="Cancelar"
+      />
+
+      <Toast open={toast} onClose={() => setToast(false)} type={toastMsg.type} title={toastMsg.title} message={toastMsg.message} />
     </MainLayout>
   );
 }

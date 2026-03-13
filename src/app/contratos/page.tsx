@@ -12,9 +12,11 @@ import Toast from "@/components/ui/Toast";
 import Modal from "@/components/ui/Modal";
 import Select from "@/components/ui/Select";
 import Input from "@/components/ui/Input";
+import AlertModal from "@/components/ui/AlertModal";
 import { MOCK_CONTRATOS, MOCK_EMPRESAS, MOCK_TENANTS } from "@/lib/mock-data";
 import { Contrato } from "@/lib/types";
 import RowMenu from "@/components/ui/RowMenu";
+import { useRole } from "@/lib/role-context";
 import { FileText, Plus, Search } from "lucide-react";
 
 const PLANES_OPTIONS = [
@@ -38,17 +40,30 @@ const estadoVariant = (e: string) => {
   return "inactive";
 };
 
+const readOnlyField = (label: string, value: string) => (
+  <div>
+    <label className="text-xs font-semibold text-neutral-700 block mb-1">{label}</label>
+    <p className="text-sm text-neutral-900 bg-neutral-50 rounded-lg px-3 py-2 border border-neutral-200">{value || "—"}</p>
+  </div>
+);
+
 export default function ContratosPage() {
+  const { canCrear, canEditar, canDeshabilitar } = useRole();
   const [contratos, setContratos] = useState<Contrato[]>(MOCK_CONTRATOS);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [modalOpen, setModalOpen] = useState(false);
   const [toast, setToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState({ title: "", message: "" });
   const [form, setForm] = useState({ empresaId: "", tenantId: "", planes: [] as string[], fechaInicio: "", fechaVencimiento: "", moneda: "CLP", monto: "" });
 
+  const [viewContrato, setViewContrato] = useState<Contrato | null>(null);
+  const [editContrato, setEditContrato] = useState<Contrato | null>(null);
+  const [alertContrato, setAlertContrato] = useState<Contrato | null>(null);
+
   const filtered = contratos.filter((c) =>
-    `${c.id} ${c.nombre} ${c.tenantId}`.toLowerCase().includes(search.toLowerCase())
+    `${c.id} ${c.nombre} ${c.tenantNombre} ${c.razonSocial}`.toLowerCase().includes(search.toLowerCase())
   );
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
@@ -73,8 +88,26 @@ export default function ContratosPage() {
       habilitado: true,
     };
     setContratos((prev) => [nuevo, ...prev]);
+    setToastMsg({ title: "¡Contrato creado!", message: "El contrato se ha creado correctamente." });
     setToast(true);
     setModalOpen(false);
+    setForm({ empresaId: "", tenantId: "", planes: [] as string[], fechaInicio: "", fechaVencimiento: "", moneda: "CLP", monto: "" });
+  };
+
+  const handleSaveEdit = () => {
+    if (!editContrato) return;
+    setContratos((prev) => prev.map((c) => c.id === editContrato.id ? editContrato : c));
+    setToastMsg({ title: "¡Contrato actualizado!", message: "Los cambios se guardaron correctamente." });
+    setToast(true);
+    setEditContrato(null);
+  };
+
+  const handleDisable = () => {
+    if (!alertContrato) return;
+    setContratos((prev) => prev.map((c) => c.id === alertContrato.id ? { ...c, habilitado: false, estado: "Inactivo" as const } : c));
+    setToastMsg({ title: "Contrato deshabilitado", message: `El contrato #${alertContrato.id} ha sido deshabilitado.` });
+    setToast(true);
+    setAlertContrato(null);
   };
 
   const togglePlan = (plan: string) => {
@@ -82,6 +115,14 @@ export default function ContratosPage() {
       ...f,
       planes: f.planes.includes(plan) ? f.planes.filter((p) => p !== plan) : [...f.planes, plan],
     }));
+  };
+
+  const toggleEditPlan = (plan: string) => {
+    if (!editContrato) return;
+    setEditContrato((prev) => {
+      if (!prev) return prev;
+      return { ...prev, planes: prev.planes.includes(plan) ? prev.planes.filter((p) => p !== plan) : [...prev.planes, plan] };
+    });
   };
 
   return (
@@ -97,7 +138,7 @@ export default function ContratosPage() {
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
                 <input className="h-8 w-56 rounded-lg border border-neutral-300 pl-8 pr-3 text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400" placeholder="Busca por ID, nombre, tenant o estado" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
               </div>
-              <Button size="md" icon={<Plus size={14} />} onClick={() => setModalOpen(true)}>Crear</Button>
+              {canCrear("Contratos") && <Button size="md" icon={<Plus size={14} />} onClick={() => setModalOpen(true)}>Crear</Button>}
             </div>
           }
         />
@@ -123,17 +164,17 @@ export default function ContratosPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {paginated.map((c, i) => (
-                      <tr key={`${c.id}-${i}`} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
+                    {paginated.map((c) => (
+                      <tr key={c.id} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
                         <td className="px-4 py-3 text-sm font-mono text-neutral-500">{c.id}</td>
                         <td className="px-4 py-3">
                           <span className="text-sm font-medium text-neutral-900">{c.tenantNombre}</span>
                         </td>
                         <td className="w-8 py-3 pr-2">
                           <RowMenu actions={[
-                            { label: "Ver", onClick: () => {} },
-                            { label: "Editar", onClick: () => {} },
-                            { label: "Deshabilitar", onClick: () => setContratos((prev) => prev.map((x, j) => j === contratos.indexOf(c) ? { ...x, habilitado: false } : x)), variant: "danger" },
+                            { label: "Ver", onClick: () => setViewContrato(c) },
+                            ...(canEditar("Contratos") ? [{ label: "Editar", onClick: () => setEditContrato({ ...c }) }] : []),
+                            ...(canDeshabilitar("Contratos") ? [{ label: "Deshabilitar", onClick: () => setAlertContrato(c), variant: "danger" as const }] : []),
                           ]} />
                         </td>
                         <td className="px-4 py-3 text-sm text-neutral-700">{c.nombre}</td>
@@ -148,7 +189,7 @@ export default function ContratosPage() {
                           <Badge variant={estadoVariant(c.estado) as never}>{c.estado}</Badge>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <Toggle checked={c.habilitado} onChange={(v) => setContratos((prev) => prev.map((x, j) => j === contratos.indexOf(c) ? { ...x, habilitado: v } : x))} />
+                          <Toggle checked={c.habilitado} onChange={(v) => setContratos((prev) => prev.map((x) => x.id === c.id ? { ...x, habilitado: v } : x))} />
                         </td>
                       </tr>
                     ))}
@@ -161,7 +202,8 @@ export default function ContratosPage() {
         </div>
       </div>
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={`Contrato #${String(contratos.length + 5).padStart(4, "0")}`} subtitle="Complete datos y selecciones los módulos de permisos asignados al plan.">
+      {/* Create Modal */}
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={`Contrato #${String(contratos.length + 5).padStart(4, "0")}`} subtitle="Complete datos y seleccione los planes asignados al contrato.">
         <div className="flex flex-col gap-4">
           <Select label="Seleccione empresa" placeholder="Seleccione" value={form.empresaId} onChange={(e) => set("empresaId", e.target.value)} options={MOCK_EMPRESAS.map((e) => ({ value: e.id, label: e.razonSocial }))} />
           <Select label="Tenant asociado" placeholder="Seleccione" value={form.tenantId} onChange={(e) => set("tenantId", e.target.value)} options={MOCK_TENANTS.filter((t) => !form.empresaId || t.empresaId === form.empresaId).map((t) => ({ value: t.id, label: t.nombre }))} />
@@ -185,7 +227,77 @@ export default function ContratosPage() {
         </div>
       </Modal>
 
-      <Toast open={toast} onClose={() => setToast(false)} type="success" title="¡Contrato creado!" message="El contrato se ha creado correctamente." />
+      {/* View Modal (read-only) */}
+      <Modal open={!!viewContrato} onClose={() => setViewContrato(null)} title={`Contrato #${viewContrato?.id || ""}`} subtitle="Detalle del contrato (solo lectura)">
+        {viewContrato && (
+          <div className="flex flex-col gap-4">
+            {readOnlyField("Tenant asociado", viewContrato.tenantNombre)}
+            <div className="grid grid-cols-2 gap-3">
+              {readOnlyField("Nombre", viewContrato.nombre)}
+              {readOnlyField("Razón Social", viewContrato.razonSocial)}
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-neutral-700 block mb-1">Planes</label>
+              <div className="flex flex-wrap gap-1">
+                {viewContrato.planes.length > 0
+                  ? viewContrato.planes.map((p) => <Badge key={p} variant={planBadgeVariant(p) as never}>{p}</Badge>)
+                  : <span className="text-xs text-neutral-400">—</span>}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {readOnlyField("Fecha de inicio", viewContrato.fechaInicio)}
+              {readOnlyField("Fecha de vencimiento", viewContrato.fechaVencimiento)}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {readOnlyField("Moneda", viewContrato.moneda)}
+              {readOnlyField("Monto", viewContrato.monto ? `$${viewContrato.monto.toLocaleString()}` : "—")}
+            </div>
+            {readOnlyField("Plazo a vencer", viewContrato.plazoVencer)}
+          </div>
+        )}
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal open={!!editContrato} onClose={() => setEditContrato(null)} title={`Editar: Contrato #${editContrato?.id || ""}`} subtitle="Modifique los datos del contrato.">
+        {editContrato && (
+          <div className="flex flex-col gap-4">
+            {readOnlyField("Tenant asociado", editContrato.tenantNombre)}
+            <div className="grid grid-cols-2 gap-3">
+              <Input label="Nombre" value={editContrato.nombre} onChange={(e) => setEditContrato((prev) => prev ? { ...prev, nombre: e.target.value } : prev)} />
+              <Input label="Razón Social" value={editContrato.razonSocial} onChange={(e) => setEditContrato((prev) => prev ? { ...prev, razonSocial: e.target.value } : prev)} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-neutral-700 block mb-1">Planes</label>
+              <div className="flex flex-wrap gap-2">
+                {PLANES_OPTIONS.map((p) => (
+                  <button key={p.value} onClick={() => toggleEditPlan(p.value)} className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${editContrato.planes.includes(p.value) ? "border-primary-400 bg-primary-50 text-primary-700" : "border-neutral-300 text-neutral-600 hover:border-neutral-400"}`}>{p.label}</button>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Input label="Fecha de inicio" type="date" value={editContrato.fechaInicio} onChange={(e) => setEditContrato((prev) => prev ? { ...prev, fechaInicio: e.target.value } : prev)} />
+              <Input label="Fecha de vencimiento" type="date" value={editContrato.fechaVencimiento} onChange={(e) => setEditContrato((prev) => prev ? { ...prev, fechaVencimiento: e.target.value } : prev)} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Select label="Moneda" value={editContrato.moneda} onChange={(e) => setEditContrato((prev) => prev ? { ...prev, moneda: e.target.value } : prev)} options={[{ value: "CLP", label: "CLP" }, { value: "USD", label: "USD" }]} />
+              <Input label="Monto" type="number" value={String(editContrato.monto)} onChange={(e) => setEditContrato((prev) => prev ? { ...prev, monto: Number(e.target.value) } : prev)} />
+            </div>
+            <Button className="w-full mt-2" onClick={handleSaveEdit}>Guardar cambios</Button>
+          </div>
+        )}
+      </Modal>
+
+      {/* Disable Alert */}
+      <AlertModal
+        open={!!alertContrato}
+        onClose={() => setAlertContrato(null)}
+        onConfirm={handleDisable}
+        title="Deshabilitar contrato"
+        message={`¿Estás seguro de que deseas deshabilitar el contrato #${alertContrato?.id}? Esta acción se puede revertir más adelante.`}
+        confirmLabel="Deshabilitar"
+      />
+
+      <Toast open={toast} onClose={() => setToast(false)} type="success" title={toastMsg.title} message={toastMsg.message} />
     </MainLayout>
   );
 }
