@@ -7,7 +7,7 @@ interface PageHeaderProps {
 
 export default function PageHeader({ breadcrumb, title, description, actions }: PageHeaderProps) {
   return (
-    <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4">
+    <div className="flex flex-col gap-3 px-4 sm:px-6 pt-5 pb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
       <div className="flex flex-col gap-0.5">
         {breadcrumb && (
           <p className="text-xs text-neutral-400">{breadcrumb}</p>
@@ -17,7 +17,11 @@ export default function PageHeader({ breadcrumb, title, description, actions }: 
           <p className="text-sm text-neutral-500">{description}</p>
         )}
       </div>
-      {actions && <div className="flex items-center gap-2 flex-shrink-0">{actions}</div>}
+      {actions && (
+        <div className="flex items-center gap-2 sm:flex-shrink-0 w-full sm:w-auto">
+          {actions}
+        </div>
+      )}
     </div>
   );
 }

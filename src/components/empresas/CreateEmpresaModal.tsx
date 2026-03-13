@@ -59,15 +59,21 @@ export default function CreateEmpresaModal({ open, onClose, onCreated }: Props) 
     <Modal
       open={open}
       onClose={onClose}
-      title="Empresa"
-      subtitle="Complete los siguientes datos para crear empresa"
+      title="Nueva empresa"
+      subtitle="Complete los datos para crear la empresa"
       width="max-w-lg"
+      footer={
+        <Button className="w-full" size="lg" disabled={!valid} loading={loading} onClick={handleSubmit}>
+          Crear empresa
+        </Button>
+      }
+      footerHint={!valid ? "Completa los campos obligatorios (*) para continuar" : undefined}
     >
       <div className="flex flex-col gap-4">
         <Input label="Razón Social" required placeholder="Ingrese razón social" value={form.razonSocial || ""} onChange={(e) => set("razonSocial", e.target.value)} />
         <Input label="Nombre de fantasía" required placeholder="Ingrese nombre de fantasía" value={form.nombreFantasia || ""} onChange={(e) => set("nombreFantasia", e.target.value)} />
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Input label="País" placeholder="Chile" value={form.pais || ""} onChange={(e) => set("pais", e.target.value)} />
           <Input label="ID Fiscal" placeholder="0000000-0" value={form.idFiscal || ""} onChange={(e) => set("idFiscal", e.target.value)} />
         </div>
@@ -75,25 +81,14 @@ export default function CreateEmpresaModal({ open, onClose, onCreated }: Props) 
         <Input label="Giro" placeholder="Ingrese giro comercial" value={form.giro || ""} onChange={(e) => set("giro", e.target.value)} />
         <Input label="Dirección" placeholder="Ingrese la dirección comercial" value={form.direccion || ""} onChange={(e) => set("direccion", e.target.value)} />
 
-        <div className="grid grid-cols-2 gap-3">
-          <Input label="Nombre de contacto" placeholder="Ingrese el nombre de contacto" value={form.nombreContacto || ""} onChange={(e) => set("nombreContacto", e.target.value)} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Input label="Nombre de contacto" placeholder="Nombre de contacto" value={form.nombreContacto || ""} onChange={(e) => set("nombreContacto", e.target.value)} />
           <Input label="Cargo" placeholder="Ingrese el cargo" value={form.cargo || ""} onChange={(e) => set("cargo", e.target.value)} />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Input label="Correo de contacto" placeholder="contacto@empresa.cl" type="email" value={form.correoContacto || ""} onChange={(e) => set("correoContacto", e.target.value)} />
           <Input label="Teléfono principal" placeholder="CL +56 9 1234 5678" value={form.telefonoPrincipal || ""} onChange={(e) => set("telefonoPrincipal", e.target.value)} />
-        </div>
-
-        <div className="mt-2">
-          <Button
-            className="w-full"
-            disabled={!valid}
-            loading={loading}
-            onClick={handleSubmit}
-          >
-            Crear empresa
-          </Button>
         </div>
       </div>
     </Modal>

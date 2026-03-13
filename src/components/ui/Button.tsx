@@ -2,7 +2,7 @@ import { ButtonHTMLAttributes, forwardRef } from "react";
 import { Loader2 } from "lucide-react";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
-type Size = "sm" | "md" | "lg";
+type Size = "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
@@ -23,9 +23,12 @@ const variantClasses: Record<Variant, string> = {
 };
 
 const sizeClasses: Record<Size, string> = {
-  sm: "h-7 px-3 text-xs gap-1.5",
-  md: "h-8 px-3.5 text-sm gap-2",
-  lg: "h-9 px-4 text-sm gap-2",
+  xs:  "h-6 px-2 text-[11px] gap-1",
+  sm:  "h-7 px-3 text-xs gap-1.5",
+  md:  "h-8 px-3.5 text-base md:text-sm gap-2",
+  lg:  "h-10 px-4 text-base md:text-sm gap-2",
+  xl:  "h-11 px-5 text-base gap-2",
+  "2xl": "h-12 px-6 text-base gap-2.5",
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -34,7 +37,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         disabled={disabled || loading}
-        className={`inline-flex cursor-pointer items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+        className={`inline-flex cursor-pointer items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 disabled:cursor-not-allowed ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
         {...props}
       >
         {loading ? (

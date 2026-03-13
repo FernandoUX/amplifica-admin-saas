@@ -16,6 +16,7 @@ import {
   Settings,
   ChevronDown,
   Check,
+  X,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -29,7 +30,11 @@ const NAV_ITEMS = [
   { label: "Configuración", href: "/configuracion",icon: Settings,   ruta: "Configuración" },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+export default function Sidebar({ onClose }: SidebarProps = {}) {
   const pathname = usePathname();
   const { rol, setRolId, canVer } = useRole();
   const [open, setOpen] = useState(false);
@@ -54,8 +59,16 @@ export default function Sidebar() {
       }}
     >
       {/* Logo */}
-      <div className="flex h-14 items-center px-4 border-b" style={{ borderColor: "var(--sidebar-border)" }}>
+      <div className="flex h-14 items-center justify-between px-4 border-b" style={{ borderColor: "var(--sidebar-border)" }}>
         <Image src="/logo-amplifica.svg" alt="Amplifica" width={110} height={25} className="h-[25px] w-auto" />
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-500 hover:bg-white/10 hover:text-neutral-200 transition-colors"
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
 
       {/* Nav */}
@@ -67,6 +80,7 @@ export default function Sidebar() {
               <li key={href}>
                 <Link
                   href={href}
+                  onClick={onClose}
                   className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${
                     active
                       ? "font-semibold text-white"
