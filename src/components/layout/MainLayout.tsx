@@ -44,10 +44,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
       {/* Main content + mobile header */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Mobile header */}
-        <header className="flex h-14 flex-shrink-0 items-center justify-between border-b border-neutral-200 bg-white px-4 md:hidden">
+        <header className="flex h-14 flex-shrink-0 items-center justify-between border-b border-neutral-800 px-4 md:hidden" style={{ backgroundColor: "#1d1d1f" }}>
           <button
             onClick={() => setSidebarOpen(true)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-300 hover:bg-white/10 transition-colors"
           >
             <Menu size={20} />
           </button>
@@ -64,7 +64,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           <div ref={roleRef} className="relative">
             <button
               onClick={() => setRoleOpen((v) => !v)}
-              className="flex items-center gap-1 rounded-lg px-2 py-1.5 hover:bg-neutral-100 transition-colors"
+              className="flex items-center gap-1 rounded-lg px-2 py-1.5 hover:bg-white/10 transition-colors"
             >
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-700 text-[10px] font-semibold text-neutral-200">
                 {rol.iniciales}
