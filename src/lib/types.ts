@@ -1,18 +1,29 @@
+export interface ContactoPersona {
+  nombre: string;
+  cargo: string;
+  correo: string;
+  telefono: string;
+}
+
 export interface Empresa {
   id: string;
-  nombre: string;
-  razonSocial: string;
   nombreFantasia: string;
-  pais: string;
+  nombre: string; // alias = nombreFantasia (backward compat)
+  razonSocial: string;
   idFiscal: string;
+  pais: string;
   giro: string;
   direccion: string;
-  nombreContacto: string;
-  cargo: string;
-  correoContacto: string;
-  telefonoPrincipal: string;
+  logo?: string;
+  notasInternas?: string;
+  contactoComercial: ContactoPersona;
+  contactoPagos: { mismoQueComercial: boolean } & ContactoPersona;
   planes: string[];
   contratos: number;
+  tenants: number;
+  tenantsTrial: number;
+  operationalStatus: "activo" | "suspendido" | "inactivo";
+  fechaCreacion: string;
   estadoComercial: "Al día" | "Por vencer" | "Vencido" | "Activo" | "Inactivo";
   estado: "Activo" | "Inactivo";
   habilitado: boolean;

@@ -1,13 +1,81 @@
 import { Empresa, Tenant, Contrato, Usuario } from "./types";
 
+const cc = (nombre: string, cargo: string, correo: string, telefono: string) => ({ nombre, cargo, correo, telefono });
+const cpMismo = () => ({ mismoQueComercial: true, nombre: "", cargo: "", correo: "", telefono: "" });
+const cp = (nombre: string, cargo: string, correo: string, telefono: string) => ({ mismoQueComercial: false, nombre, cargo, correo, telefono });
+
 export const MOCK_EMPRESAS: Empresa[] = [
-  { id: "1", nombre: "Extra Life", razonSocial: "Extra Life SpA", nombreFantasia: "ExtraLife", pais: "Chile", idFiscal: "96603490-5", giro: "Retail", direccion: "Av. Apoquindo 4501, Las Condes", nombreContacto: "Tamara Alve", cargo: "CEO", correoContacto: "contacto@amplifica.io", telefonoPrincipal: "CL +56 9 1234 5678", planes: ["Express"], contratos: 3, estadoComercial: "Al día", estado: "Activo", habilitado: true },
-  { id: "2", nombre: "ChileanBazar", razonSocial: "ChileanBazar SpA", nombreFantasia: "ChileanBazar", pais: "Chile", idFiscal: "76820690-5", giro: "Comercio electrónico", direccion: "Calle Falsa 123", nombreContacto: "Pedro Muñoz", cargo: "CTO", correoContacto: "pedro@chileanbazar.cl", telefonoPrincipal: "CL +56 9 8765 4321", planes: ["Envíos Pro"], contratos: 0, estadoComercial: "Vencido", estado: "Inactivo", habilitado: false },
-  { id: "3", nombre: "MarketPlaceChile", razonSocial: "MarketPlaceChile SpA", nombreFantasia: "MarketPlaceChile", pais: "Chile", idFiscal: "77100200-K", giro: "Marketplace", direccion: "Teatinos 280, Santiago", nombreContacto: "Laura Soto", cargo: "CFO", correoContacto: "laura@mpc.cl", telefonoPrincipal: "CL +56 9 1111 2222", planes: ["Express"], contratos: 1, estadoComercial: "Por vencer", estado: "Activo", habilitado: true },
-  { id: "4", nombre: "E-ShopChile", razonSocial: "E-ShopChile SpA", nombreFantasia: "E-ShopChile", pais: "Chile", idFiscal: "76300100-1", giro: "E-commerce", direccion: "Gran Av. José Miguel Carrera 7890", nombreContacto: "Carlos Vera", cargo: "Ops", correoContacto: "carlos@eshop.cl", telefonoPrincipal: "CL +56 9 3333 4444", planes: [], contratos: 2, estadoComercial: "Al día", estado: "Activo", habilitado: true },
-  { id: "5", nombre: "PatagoniaICom", razonSocial: "PatagoniaICom SpA", nombreFantasia: "PatagoniaICom", pais: "Chile", idFiscal: "76500200-3", giro: "Logística", direccion: "Camino Lo Barnechea 1234", nombreContacto: "Ana Reyes", cargo: "CEO", correoContacto: "ana@patagonia.cl", telefonoPrincipal: "CL +56 9 5555 6666", planes: ["Envíos Pro", "Multicanal"], contratos: 3, estadoComercial: "Al día", estado: "Activo", habilitado: true },
-  { id: "6", nombre: "SantiagoMarket", razonSocial: "SantiagoMarket SpA", nombreFantasia: "SantiagoMarket", pais: "Chile", idFiscal: "76700300-5", giro: "Retail", direccion: "Av. Libertador Bernardo O'Higgins 1234", nombreContacto: "Mario Rojas", cargo: "Dir. Comercial", correoContacto: "mario@sm.cl", telefonoPrincipal: "CL +56 9 7777 8888", planes: [], contratos: 0, estadoComercial: "Inactivo", estado: "Inactivo", habilitado: false },
-  { id: "7", nombre: "ChileCart", razonSocial: "ChileCart SpA", nombreFantasia: "ChileCart", pais: "Chile", idFiscal: "76900100-7", giro: "E-commerce", direccion: "Pío Nono 360, Providencia", nombreContacto: "Sofía Castro", cargo: "CEO", correoContacto: "sofia@chilecart.cl", telefonoPrincipal: "CL +56 9 9999 0000", planes: ["Envíos Pro"], contratos: 1, estadoComercial: "Al día", estado: "Activo", habilitado: true },
+  {
+    id: "1", nombreFantasia: "Extra Life", nombre: "Extra Life",
+    razonSocial: "Extra Life SpA", idFiscal: "96.603.490-5", pais: "Chile",
+    giro: "Retail", direccion: "Av. Apoquindo 4501, Las Condes",
+    contactoComercial: cc("Tamara Alve", "CEO", "tamara@extralife.cl", "+56 9 1234 5678"),
+    contactoPagos: cp("Ana Torres", "CFO", "finanzas@extralife.cl", "+56 9 9876 5432"),
+    notasInternas: "Cliente premium. Renovación anual en marzo.",
+    planes: ["Express"], contratos: 3, tenants: 2, tenantsTrial: 0,
+    operationalStatus: "activo", fechaCreacion: "2023-03-15",
+    estadoComercial: "Al día", estado: "Activo", habilitado: true,
+  },
+  {
+    id: "2", nombreFantasia: "ChileanBazar", nombre: "ChileanBazar",
+    razonSocial: "ChileanBazar SpA", idFiscal: "76.820.690-5", pais: "Chile",
+    giro: "Comercio electrónico", direccion: "Calle Falsa 123, Santiago",
+    contactoComercial: cc("Pedro Muñoz", "CTO", "pedro@chileanbazar.cl", "+56 9 8765 4321"),
+    contactoPagos: cpMismo(),
+    planes: ["Envíos Pro"], contratos: 0, tenants: 1, tenantsTrial: 1,
+    operationalStatus: "suspendido", fechaCreacion: "2023-07-22",
+    estadoComercial: "Vencido", estado: "Inactivo", habilitado: false,
+  },
+  {
+    id: "3", nombreFantasia: "MarketPlaceChile", nombre: "MarketPlaceChile",
+    razonSocial: "MarketPlaceChile SpA", idFiscal: "77.100.200-K", pais: "Chile",
+    giro: "Marketplace", direccion: "Teatinos 280, Santiago",
+    contactoComercial: cc("Laura Soto", "CFO", "laura@mpc.cl", "+56 9 1111 2222"),
+    contactoPagos: cpMismo(),
+    planes: ["Express"], contratos: 1, tenants: 1, tenantsTrial: 1,
+    operationalStatus: "activo", fechaCreacion: "2024-01-10",
+    estadoComercial: "Por vencer", estado: "Activo", habilitado: true,
+  },
+  {
+    id: "4", nombreFantasia: "E-ShopChile", nombre: "E-ShopChile",
+    razonSocial: "E-ShopChile SpA", idFiscal: "76.300.100-1", pais: "Colombia",
+    giro: "E-commerce", direccion: "Cra. 7 #71-21, Bogotá",
+    contactoComercial: cc("Carlos Vera", "Gerente Ops", "carlos@eshop.cl", "+57 300 333 4444"),
+    contactoPagos: cp("Valentina Ríos", "Contadora", "pagos@eshop.cl", "+57 300 555 6666"),
+    planes: [], contratos: 2, tenants: 1, tenantsTrial: 0,
+    operationalStatus: "activo", fechaCreacion: "2024-02-28",
+    estadoComercial: "Al día", estado: "Activo", habilitado: true,
+  },
+  {
+    id: "5", nombreFantasia: "PatagoniaICom", nombre: "PatagoniaICom",
+    razonSocial: "PatagoniaICom SpA", idFiscal: "76.500.200-3", pais: "Chile",
+    giro: "Logística", direccion: "Camino Lo Barnechea 1234, Santiago",
+    contactoComercial: cc("Ana Reyes", "CEO", "ana@patagonia.cl", "+56 9 5555 6666"),
+    contactoPagos: cpMismo(),
+    planes: ["Envíos Pro", "Multicanal"], contratos: 3, tenants: 1, tenantsTrial: 0,
+    operationalStatus: "activo", fechaCreacion: "2022-11-05",
+    estadoComercial: "Al día", estado: "Activo", habilitado: true,
+  },
+  {
+    id: "6", nombreFantasia: "SantiagoMarket", nombre: "SantiagoMarket",
+    razonSocial: "SantiagoMarket SpA", idFiscal: "76.700.300-5", pais: "Chile",
+    giro: "Retail", direccion: "Av. Libertador B. O'Higgins 1234",
+    contactoComercial: cc("Mario Rojas", "Dir. Comercial", "mario@sm.cl", "+56 9 7777 8888"),
+    contactoPagos: cpMismo(),
+    planes: [], contratos: 0, tenants: 0, tenantsTrial: 0,
+    operationalStatus: "inactivo", fechaCreacion: "2023-05-18",
+    estadoComercial: "Inactivo", estado: "Inactivo", habilitado: false,
+  },
+  {
+    id: "7", nombreFantasia: "ChileCart", nombre: "ChileCart",
+    razonSocial: "ChileCart SpA", idFiscal: "76.900.100-7", pais: "Perú",
+    giro: "E-commerce", direccion: "Av. Larco 1301, Miraflores, Lima",
+    contactoComercial: cc("Sofía Castro", "CEO", "sofia@chilecart.cl", "+51 9 9999 0000"),
+    contactoPagos: cp("Roberto Lima", "Finanzas", "pagos@chilecart.cl", "+51 9 1111 2222"),
+    planes: ["Envíos Pro"], contratos: 1, tenants: 1, tenantsTrial: 1,
+    operationalStatus: "activo", fechaCreacion: "2024-08-30",
+    estadoComercial: "Al día", estado: "Activo", habilitado: true,
+  },
 ];
 
 export const MOCK_TENANTS: Tenant[] = [

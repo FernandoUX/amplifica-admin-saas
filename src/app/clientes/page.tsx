@@ -8,7 +8,6 @@ import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
 import Pagination from "@/components/ui/Pagination";
-import Toggle from "@/components/ui/Toggle";
 import Toast from "@/components/ui/Toast";
 import RowMenu from "@/components/ui/RowMenu";
 import { MOCK_EMPRESAS, MOCK_TENANTS, MOCK_CONTRATOS } from "@/lib/mock-data";
@@ -16,21 +15,28 @@ import { Empresa } from "@/lib/types";
 import { useRole } from "@/lib/role-context";
 import { Building2, Plus, Search, AlertTriangle, Server, FileText, ChevronUp, ChevronDown } from "lucide-react";
 
-const planBadgeVariant = (plan: string) => {
-  if (plan === "Express") return "express";
-  if (plan === "Envíos Pro") return "envios-pro";
-  if (plan === "Multicanal") return "multicanal";
-  return "default";
+const COUNTRY_FLAG: Record<string, string> = {
+  Chile: "🇨🇱", Colombia: "🇨🇴", Perú: "🇵🇪",
+  Argentina: "🇦🇷", México: "🇲🇽", España: "🇪🇸", Brasil: "🇧🇷",
 };
 
+const statusVariant = (s: string) => {
+  if (s === "activo") return "active";
+  if (s === "suspendido") return "pending";
+  return "inactive";
+};
+const statusLabel = (s: string) => {
+  if (s === "activo") return "Activo";
+  if (s === "suspendido") return "Suspendido";
+  return "Inactivo";
+};
 const estadoVariant = (e: string) => {
   if (e === "Al día" || e === "Activo") return "active";
   if (e === "Por vencer") return "pending";
-  if (e === "Vencido" || e === "Inactivo") return "vencido";
-  return "default";
+  return "inactive";
 };
 
-type SortCol = "nombre" | "razonSocial" | "contratos" | "estadoComercial" | "estado" | null;
+type SortCol = "nombreFantasia" | "razonSocial" | "tenants" | "operationalStatus" | "fechaCreacion" | null;
 
 function SortIcon({ col, sortCol, sortDir }: { col: string; sortCol: SortCol; sortDir: "asc" | "desc" }) {
   if (sortCol !== col) return <ChevronUp size={11} className="text-neutral-300 ml-0.5" />;
@@ -53,7 +59,7 @@ export default function ClientesPage() {
   const [toastMsg, setToastMsg] = useState({ title: "", message: "" });
 
   const filtered = empresas.filter((e) =>
-    `${e.nombre} ${e.razonSocial}`.toLowerCase().includes(search.toLowerCase())
+    `${e.nombreFantasia} ${e.razonSocial} ${e.idFiscal}`.toLowerCase().includes(search.toLowerCase())
   );
 
   const sorted = sortCol
@@ -72,22 +78,24 @@ export default function ClientesPage() {
     setPage(1);
   };
 
-  const handleToggle = (empresa: Empresa, val: boolean) => {
-    if (!val) {
-      setAlertEmpresa(empresa);
-    } else {
-      setEmpresas((prev) => prev.map((e) => e.id === empresa.id ? { ...e, habilitado: true, estado: "Activo" } : e));
-      setToastMsg({ title: "Cliente habilitado", message: `"${empresa.nombre}" ha sido habilitado.` });
-      setToast(true);
-    }
-  };
+  const handleSuspend = (empresa: Empresa) => setAlertEmpresa(empresa);
 
-  const handleDisable = () => {
+  const confirmSuspend = () => {
     if (!alertEmpresa) return;
-    setEmpresas((prev) => prev.map((e) => e.id === alertEmpresa.id ? { ...e, habilitado: false, estado: "Inactivo" } : e));
-    setToastMsg({ title: "Cliente deshabilitado", message: `"${alertEmpresa.nombre}" ha sido deshabilitado.` });
+    setEmpresas((prev) => prev.map((e) =>
+      e.id === alertEmpresa.id ? { ...e, operationalStatus: "suspendido", habilitado: false, estado: "Inactivo" } : e
+    ));
+    setToastMsg({ title: "Cliente suspendido", message: `"${alertEmpresa.nombreFantasia}" ha sido suspendido.` });
     setToast(true);
     setAlertEmpresa(null);
+  };
+
+  const handleReactivar = (empresa: Empresa) => {
+    setEmpresas((prev) => prev.map((e) =>
+      e.id === empresa.id ? { ...e, operationalStatus: "activo", habilitado: true, estado: "Activo" } : e
+    ));
+    setToastMsg({ title: "Cliente reactivado", message: `"${empresa.nombreFantasia}" está activo nuevamente.` });
+    setToast(true);
   };
 
   const thBase = "px-4 py-2.5 text-left text-xs font-semibold text-neutral-500";
@@ -105,7 +113,7 @@ export default function ClientesPage() {
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
               <input
                 className="h-[44px] w-full sm:min-w-[320px] rounded-lg border border-neutral-300 pl-8 pr-3 text-base md:text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
-                placeholder="Busca por nombre o razón social"
+                placeholder="Busca por nombre, razón social o RUT"
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               />
@@ -124,26 +132,27 @@ export default function ClientesPage() {
           ) : (
             <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
               <div className="table-scroll">
-                <table className="w-full min-w-[800px]">
+                <table className="w-full min-w-[900px]">
                   <thead className="sticky top-0 z-10">
                     <tr className="border-b border-neutral-100 bg-neutral-50">
-                      <th className={thSort} onClick={() => toggleSort("nombre")}>
-                        <span className="inline-flex items-center">Nombre <SortIcon col="nombre" sortCol={sortCol} sortDir={sortDir} /></span>
+                      <th className={thSort} onClick={() => toggleSort("nombreFantasia")}>
+                        <span className="inline-flex items-center">Nombre de fantasía <SortIcon col="nombreFantasia" sortCol={sortCol} sortDir={sortDir} /></span>
                       </th>
                       <th className={thSort} onClick={() => toggleSort("razonSocial")}>
                         <span className="inline-flex items-center">Razón Social <SortIcon col="razonSocial" sortCol={sortCol} sortDir={sortDir} /></span>
                       </th>
-                      <th className={thBase}>Planes</th>
-                      <th className={thSort} onClick={() => toggleSort("contratos")}>
-                        <span className="inline-flex items-center">Contratos <SortIcon col="contratos" sortCol={sortCol} sortDir={sortDir} /></span>
+                      <th className={thBase}>ID Fiscal</th>
+                      <th className={thBase}>País</th>
+                      <th className={thSort} onClick={() => toggleSort("tenants")}>
+                        <span className="inline-flex items-center">Tenants <SortIcon col="tenants" sortCol={sortCol} sortDir={sortDir} /></span>
                       </th>
-                      <th className={thSort} onClick={() => toggleSort("estadoComercial")}>
-                        <span className="inline-flex items-center">E. Comercial <SortIcon col="estadoComercial" sortCol={sortCol} sortDir={sortDir} /></span>
+                      <th className={thBase}>En trial</th>
+                      <th className={thSort} onClick={() => toggleSort("operationalStatus")}>
+                        <span className="inline-flex items-center">Estado <SortIcon col="operationalStatus" sortCol={sortCol} sortDir={sortDir} /></span>
                       </th>
-                      <th className={thSort} onClick={() => toggleSort("estado")}>
-                        <span className="inline-flex items-center">Estado <SortIcon col="estado" sortCol={sortCol} sortDir={sortDir} /></span>
+                      <th className={thSort} onClick={() => toggleSort("fechaCreacion")}>
+                        <span className="inline-flex items-center">Creación <SortIcon col="fechaCreacion" sortCol={sortCol} sortDir={sortDir} /></span>
                       </th>
-                      <th className="px-4 py-2.5 text-center text-xs font-semibold text-neutral-500">Habilitar</th>
                       <th className="w-10 py-2.5"></th>
                     </tr>
                   </thead>
@@ -151,31 +160,45 @@ export default function ClientesPage() {
                     {paginated.map((empresa) => (
                       <tr key={empresa.id} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
                         <td className="px-4 py-3">
-                          <span className="text-sm font-medium text-neutral-900">{empresa.nombre}</span>
+                          <button
+                            onClick={() => router.push(`/clientes/${empresa.id}`)}
+                            className="text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline text-left"
+                          >
+                            {empresa.nombreFantasia}
+                          </button>
                         </td>
                         <td className="px-4 py-3 text-sm text-neutral-600">{empresa.razonSocial}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex flex-wrap gap-1">
-                            {empresa.planes.length > 0
-                              ? empresa.planes.map((p) => <Badge key={p} variant={planBadgeVariant(p) as never}>{p}</Badge>)
-                              : <span className="text-xs text-neutral-400">—</span>}
-                          </div>
+                        <td className="px-4 py-3 text-sm text-neutral-500 font-mono">{empresa.idFiscal}</td>
+                        <td className="px-4 py-3 text-sm text-neutral-700">
+                          <span className="flex items-center gap-1.5">
+                            <span>{COUNTRY_FLAG[empresa.pais] ?? "🌎"}</span>
+                            <span>{empresa.pais}</span>
+                          </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-700">{empresa.contratos}</td>
+                        <td className="px-4 py-3 text-sm text-neutral-700">{empresa.tenants}</td>
                         <td className="px-4 py-3">
-                          <Badge variant={estadoVariant(empresa.estadoComercial) as never}>{empresa.estadoComercial}</Badge>
+                          {empresa.tenantsTrial > 0
+                            ? <Badge variant="pending">{empresa.tenantsTrial} trial</Badge>
+                            : <span className="text-xs text-neutral-400">—</span>}
                         </td>
                         <td className="px-4 py-3">
-                          <Badge variant={empresa.estado === "Activo" ? "active" : "inactive"}>{empresa.estado}</Badge>
+                          <Badge variant={statusVariant(empresa.operationalStatus) as never}>
+                            {statusLabel(empresa.operationalStatus)}
+                          </Badge>
                         </td>
-                        <td className="px-4 py-3 text-center">
-                          <Toggle checked={empresa.habilitado} onChange={(v) => handleToggle(empresa, v)} disabled={!canDeshabilitar("Clientes")} />
+                        <td className="px-4 py-3 text-sm text-neutral-500">
+                          {new Date(empresa.fechaCreacion).toLocaleDateString("es-CL", { day: "2-digit", month: "short", year: "numeric" })}
                         </td>
                         <td className="w-10 py-3 pr-3">
                           <RowMenu actions={[
                             { label: "Ver detalle", onClick: () => router.push(`/clientes/${empresa.id}`) },
                             ...(canEditar("Clientes") ? [{ label: "Editar", onClick: () => router.push(`/clientes/${empresa.id}/editar`) }] : []),
-                            ...(canDeshabilitar("Clientes") ? [{ label: "Deshabilitar", onClick: () => setAlertEmpresa(empresa), variant: "danger" as const }] : []),
+                            ...(canDeshabilitar("Clientes") && empresa.operationalStatus !== "suspendido"
+                              ? [{ label: "Suspender", onClick: () => handleSuspend(empresa), variant: "danger" as const }]
+                              : []),
+                            ...(canDeshabilitar("Clientes") && empresa.operationalStatus !== "activo"
+                              ? [{ label: "Reactivar", onClick: () => handleReactivar(empresa) }]
+                              : []),
                           ]} />
                         </td>
                       </tr>
@@ -202,7 +225,7 @@ export default function ClientesPage() {
                 </div>
                 <h3 className="text-base font-semibold text-neutral-900">Suspender cliente</h3>
                 <p className="text-sm text-neutral-500">
-                  Al suspender <strong className="text-neutral-700">&quot;{alertEmpresa.nombre}&quot;</strong>, todos sus tenants quedarán bloqueados y los usuarios no podrán acceder. ¿Deseas continuar?
+                  Al suspender <strong className="text-neutral-700">&quot;{alertEmpresa.nombreFantasia}&quot;</strong>, todos sus tenants quedarán bloqueados y los usuarios no podrán acceder. ¿Deseas continuar?
                 </p>
               </div>
               <div className="mt-4">
@@ -245,7 +268,7 @@ export default function ClientesPage() {
               </div>
               <div className="flex w-full gap-3 mt-5">
                 <Button variant="secondary" className="flex-1" onClick={() => setAlertEmpresa(null)}>Cancelar</Button>
-                <Button variant="danger" className="flex-1" onClick={handleDisable}>Confirmar suspensión</Button>
+                <Button variant="danger" className="flex-1" onClick={confirmSuspend}>Confirmar suspensión</Button>
               </div>
             </div>
           </div>
