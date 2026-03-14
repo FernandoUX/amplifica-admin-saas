@@ -51,8 +51,9 @@ export default function ClienteDetailPage({ params }: { params: Promise<{ id: st
 
   const empresa = MOCK_EMPRESAS.find((e) => e.id === id);
   const tenants = MOCK_TENANTS.filter((t) => t.empresaId === id);
-  const contratos = MOCK_CONTRATOS.filter((c) => c.empresaId === id);
-  const usuarios = MOCK_USUARIOS.filter((u) => u.tenantId && tenants.some((t) => t.id === u.tenantId));
+  const tenantIds = tenants.map((t) => t.id);
+  const contratos = MOCK_CONTRATOS.filter((c) => tenantIds.includes(c.tenantId));
+  const usuarios = MOCK_USUARIOS.filter((u) => u.memberships.some((m) => tenants.some((t) => t.id === m.tenantId)));
 
   if (!empresa) {
     return (
@@ -227,7 +228,7 @@ export default function ClienteDetailPage({ params }: { params: Promise<{ id: st
                       <p className="text-sm font-medium text-neutral-800">{t.nombre}</p>
                       <p className="text-xs text-neutral-400">{t.dominio} · ID: {t.id}</p>
                     </div>
-                    <Badge variant={t.estado === "Activo" ? "active" : "inactive"}>{t.estado}</Badge>
+                    <Badge variant={t.operationalStatus === "activo" ? "active" : "inactive"}>{t.operationalStatus === "activo" ? "Activo" : t.operationalStatus === "suspendido" ? "Suspendido" : "Inactivo"}</Badge>
                   </div>
                 ))}
               </div>
@@ -250,10 +251,10 @@ export default function ClienteDetailPage({ params }: { params: Promise<{ id: st
                 {contratos.map((c) => (
                   <div key={c.id} className="flex items-center justify-between px-5 py-3">
                     <div>
-                      <p className="text-sm font-medium text-neutral-800">{c.nombre}</p>
-                      <p className="text-xs text-neutral-400">Vence: {c.fechaVencimiento} · {c.plazoVencer}</p>
+                      <p className="text-sm font-medium text-neutral-800">{c.displayId} {c.planNombre ? `· ${c.planNombre}` : "· Trial"}</p>
+                      <p className="text-xs text-neutral-400">Vence: {c.fechaVencimiento}</p>
                     </div>
-                    <Badge variant={estadoVariant(c.estado) as never}>{c.estado}</Badge>
+                    <Badge variant={c.estado === "vigente" ? "active" : "inactive"}>{c.estado === "vigente" ? "Vigente" : "Inactivo"}</Badge>
                   </div>
                 ))}
               </div>
@@ -279,7 +280,7 @@ export default function ClienteDetailPage({ params }: { params: Promise<{ id: st
                       <p className="text-sm font-medium text-neutral-800">{u.nombres} {u.apellidos}</p>
                       <p className="text-xs text-neutral-400">{u.email} · {u.rol}</p>
                     </div>
-                    <Badge variant={u.estado === "Activo" ? "active" : "inactive"}>{u.estado}</Badge>
+                    <Badge variant={u.estado === "Activo" ? "active" : u.estado === "Pendiente de activación" ? "pending" : "inactive"}>{u.estado}</Badge>
                   </div>
                 ))}
               </div>

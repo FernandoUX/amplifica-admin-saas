@@ -32,50 +32,62 @@ export interface Empresa {
 export interface Tenant {
   id: string;
   empresaId: string;
-  razonSocial: string;
   nombre: string;
   dominio: string;
-  pais: string;
-  zonaHoraria: string;
-  moneda: string;
-  nota?: string;
-  couriers: boolean;
-  planes: string[];
-  contratos: number;
-  estado: "Activo" | "Inactivo";
-  habilitado: boolean;
+  billingMode: "trial" | "pagado" | "sin_contrato";
+  planNombre: string | null;
+  operationalStatus: "activo" | "suspendido" | "inactivo";
+  fechaCreacion: string;
 }
 
 export interface Contrato {
   id: string;
-  empresaId: string;
+  displayId: string;
   tenantId: string;
-  tenantNombre: string;
-  nombre: string;
-  razonSocial: string;
-  planes: string[];
+  billingMode: "trial" | "pagado";
+  planId: string | null;
+  planNombre: string | null;
+  trialConfigId: string | null;
+  trialConfigNombre: string | null;
   fechaInicio: string;
   fechaVencimiento: string;
+  trialEndDate: string | null;
   moneda: string;
-  monto: number;
-  plazoVencer: string;
-  estado: "Activo" | "Inactivo" | "Vencido" | "Vigente";
-  habilitado: boolean;
+  montoBase: number | null;
+  precioPedidoAdicional: number | null;
+  tipoDescuento: "porcentaje" | "monto_fijo" | "precio_negociado" | null;
+  valorDescuento: number | null;
+  montoBaseFinal: number | null;
+  overridePedidosMes: number | null;
+  overrideSucursales: number | null;
+  autoRenew: boolean;
+  notas: string | null;
+  estado: "vigente" | "inactivo";
+  closureReason: "vencido" | "cancelado" | "convertido" | null;
+  closureDate: string | null;
+  closureNotes: string | null;
+  fechaCreacion: string;
+}
+
+export interface TenantMembership {
+  tenantId: string;
+  rol: string; // Admin Tenant, Operador, Visor (for tenant users) — or the staff role
+  fechaAsignacion: string;
 }
 
 export interface Usuario {
   id: string;
-  tipo: "Amplifica" | "Tenant" | "Staff";
+  tipo: "Usuario Tenant" | "Staff Amplifica" | "SaaS Admin";
   nombres: string;
   apellidos: string;
-  telefono: string;
   email: string;
-  empresaId?: string;
-  tenantId?: string;
-  rol: string;
-  diasRestantes?: number;
-  estado: "Activo" | "Inactivo";
-  habilitado: boolean;
+  telefono: string;
+  memberships: TenantMembership[];
+  rol: string; // Global role: Staff → Soporte/Operaciones de campo; SaaS Admin → Super Admin/Comercial/etc.; Tenant → primary display
+  estado: "Pendiente de activación" | "Activo" | "Inactivo";
+  fechaCreacion: string;
+  ultimoLogin: string | null;
+  creadoPor: string;
 }
 
 export interface Rol {
@@ -87,4 +99,65 @@ export interface Rol {
     crear: string[];
     deshabilitar: string[];
   };
+}
+
+// ── Feature 3: Planes y Licenciamientos ──
+
+export const MODULOS_SISTEMA = [
+  "Fulfillment",
+  "Devoluciones",
+  "Tracking",
+  "Gestión de inventario",
+  "Reportería avanzada",
+  "Integraciones",
+  "Multi-bodega",
+  "Gestión de couriers",
+] as const;
+
+export type ModuloSistema = (typeof MODULOS_SISTEMA)[number];
+
+export interface Plan {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  modulos: string[];
+  pedidosMax: number;
+  sucursalesMax: number;
+  tenantsActivos: number;
+  estado: "Activo" | "Inactivo";
+  fechaCreacion: string;
+}
+
+export interface TrialConfig {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  duracionDias: number;
+  modulos: string[];
+  pedidosMax: number;
+  sucursalesMax: number;
+  esDefault: boolean;
+  tenantsActivos: number;
+  estado: "Activo" | "Inactivo";
+  fechaCreacion: string;
+}
+
+// ── Audit Log ──
+
+export type AuditEntidad = "Cliente" | "Tenant" | "Contrato" | "Usuario" | "Plan" | "Trial Config";
+export type AuditAccion = "Crear" | "Editar" | "Desactivar" | "Reactivar" | "Suspender" | "Eliminar" | "Reenviar invitación";
+
+export interface AuditLogEntry {
+  id: string;
+  timestamp: string;
+  usuarioId: string;
+  usuarioNombre: string;
+  entidad: AuditEntidad;
+  entidadId: string;
+  entidadLabel: string;
+  accion: AuditAccion;
+  campo: string | null;
+  valorAnterior: string | null;
+  valorNuevo: string | null;
+  ip: string;
 }

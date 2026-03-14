@@ -214,7 +214,8 @@ export default function ClientesPage() {
 
       {alertEmpresa && (() => {
         const relTenants = MOCK_TENANTS.filter((t) => t.empresaId === alertEmpresa.id);
-        const relContratos = MOCK_CONTRATOS.filter((c) => c.empresaId === alertEmpresa.id);
+        const relTenantIds = relTenants.map((t) => t.id);
+        const relContratos = MOCK_CONTRATOS.filter((c) => relTenantIds.includes(c.tenantId));
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setAlertEmpresa(null)} />
@@ -241,7 +242,7 @@ export default function ClientesPage() {
                           <span className="text-sm font-medium text-neutral-800">{t.nombre}</span>
                           <span className="text-[11px] text-neutral-400 ml-2">ID: {t.id}</span>
                         </div>
-                        <Badge variant={t.estado === "Activo" ? "active" : "inactive"}>{t.estado}</Badge>
+                        <Badge variant={t.operationalStatus === "activo" ? "active" : "inactive"}>{t.operationalStatus === "activo" ? "Activo" : t.operationalStatus === "suspendido" ? "Suspendido" : "Inactivo"}</Badge>
                       </div>
                     ))}
                   </div>
@@ -257,10 +258,10 @@ export default function ClientesPage() {
                     {relContratos.map((c) => (
                       <div key={c.id} className="flex items-center justify-between px-3 py-2">
                         <div>
-                          <span className="text-sm font-medium text-neutral-800">{c.nombre}</span>
-                          <span className="text-[11px] text-neutral-400 ml-2">Vence: {c.fechaVencimiento}</span>
+                          <span className="text-sm font-medium text-neutral-800">{c.displayId}</span>
+                          <span className="text-[11px] text-neutral-400 ml-2">{c.planNombre ?? "Trial"} · Vence: {c.fechaVencimiento}</span>
                         </div>
-                        <Badge variant={estadoVariant(c.estado) as never}>{c.estado}</Badge>
+                        <Badge variant={c.estado === "vigente" ? "active" : "inactive"}>{c.estado === "vigente" ? "Vigente" : "Inactivo"}</Badge>
                       </div>
                     ))}
                   </div>

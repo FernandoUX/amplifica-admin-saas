@@ -1,265 +1,429 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
 import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
 import Pagination from "@/components/ui/Pagination";
-import Modal from "@/components/ui/Modal";
-import Input from "@/components/ui/Input";
 import Toast from "@/components/ui/Toast";
 import RowMenu from "@/components/ui/RowMenu";
 import AlertModal from "@/components/ui/AlertModal";
+import { MOCK_PLANES, MOCK_TRIAL_CONFIGS } from "@/lib/mock-data";
+import { Plan, TrialConfig } from "@/lib/types";
 import { useRole } from "@/lib/role-context";
-import { Layers, Plus, Search, ChevronRight, ChevronDown } from "lucide-react";
+import { Layers, Plus, Search, ChevronUp, ChevronDown, Star } from "lucide-react";
 
-const RUTAS = ["Dashboard", "Pedidos", "Inventario", "Devoluciones", "Recepciones", "Configuración", "Productos", "Couriers"];
-const MAX_BADGES = 3;
+/* ── Helpers ── */
+const MAX_TAGS = 3;
+const statusVariant = (s: string) => (s === "Activo" ? "active" : "inactive");
 
-interface Rol { id: string; nombre: string; protegido?: boolean; permisos: { ver: string[]; editar: string[]; crear: string[]; deshabilitar: string[] } }
+type PlanSortCol = "nombre" | "pedidosMax" | "sucursalesMax" | "tenantsActivos" | "estado" | null;
+type TrialSortCol = "nombre" | "duracionDias" | "pedidosMax" | "sucursalesMax" | "tenantsActivos" | "estado" | null;
 
-const DEFAULT_ROLES: Rol[] = [
-  { id: "sa", nombre: "Super Admin", protegido: true, permisos: { ver: [...RUTAS], editar: [...RUTAS], crear: [...RUTAS], deshabilitar: [...RUTAS] } },
-  { id: "staff", nombre: "Staff Amplifica SaaS", permisos: { ver: [...RUTAS], editar: ["Pedidos", "Inventario", "Devoluciones", "Recepciones", "Productos", "Couriers"], crear: ["Pedidos", "Inventario", "Recepciones", "Productos"], deshabilitar: [] } },
-  { id: "finanzas", nombre: "Finanzas SaaS", permisos: { ver: [...RUTAS], editar: [], crear: [], deshabilitar: [] } },
-];
+function SortIcon({ active, dir }: { active: boolean; dir: "asc" | "desc" }) {
+  if (!active) return <ChevronUp size={11} className="text-neutral-300 ml-0.5" />;
+  return dir === "asc"
+    ? <ChevronUp size={11} className="text-primary-500 ml-0.5" />
+    : <ChevronDown size={11} className="text-primary-500 ml-0.5" />;
+}
 
-function BadgeList({ items, expanded }: { items: string[]; expanded: boolean }) {
-  if (items.length === 0) return <span className="text-xs text-neutral-400">—</span>;
-  const visible = expanded ? items : items.slice(0, MAX_BADGES);
-  const remaining = items.length - MAX_BADGES;
+function ModuleTags({ modulos }: { modulos: string[] }) {
+  if (modulos.length === 0) return <span className="text-xs text-neutral-400">—</span>;
+  const visible = modulos.slice(0, MAX_TAGS);
+  const remaining = modulos.length - MAX_TAGS;
   return (
     <div className="flex flex-wrap gap-1">
-      {visible.map((p) => <Badge key={p} variant="default">{p}</Badge>)}
-      {!expanded && remaining > 0 && (
-        <Badge variant="default">+{remaining} más</Badge>
+      {visible.map((m) => (
+        <span key={m} className="inline-flex rounded-md bg-neutral-100 border border-neutral-200 px-1.5 py-0.5 text-[11px] font-medium text-neutral-600">
+          {m}
+        </span>
+      ))}
+      {remaining > 0 && (
+        <span className="inline-flex rounded-md bg-neutral-100 border border-neutral-200 px-1.5 py-0.5 text-[11px] font-medium text-neutral-500">
+          +{remaining}
+        </span>
       )}
     </div>
   );
 }
 
-export default function PlanesPage() {
+/* ── Tab components ── */
+
+function PlanesTab() {
+  const router = useRouter();
   const { canCrear, canEditar, canDeshabilitar } = useRole();
-  const [roles, setRoles] = useState<Rol[]>(DEFAULT_ROLES);
+  const [planes, setPlanes] = useState<Plan[]>(MOCK_PLANES);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const [modalOpen, setModalOpen] = useState(false);
-  const [viewRol, setViewRol] = useState<Rol | null>(null);
-  const [editRol, setEditRol] = useState<Rol | null>(null);
-  const [alertRol, setAlertRol] = useState<Rol | null>(null);
+  const [pageSize, setPageSize] = useState(20);
+  const [sortCol, setSortCol] = useState<PlanSortCol>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [alertPlan, setAlertPlan] = useState<Plan | null>(null);
   const [toast, setToast] = useState(false);
   const [toastMsg, setToastMsg] = useState({ title: "", message: "" });
-  const [form, setForm] = useState({ nombre: "", ver: [] as string[], editar: [] as string[], crear: [] as string[], deshabilitar: [] as string[] });
 
-  const filtered = roles.filter((r) => r.nombre.toLowerCase().includes(search.toLowerCase()));
-  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const filtered = planes.filter((p) =>
+    `${p.nombre} ${p.descripcion}`.toLowerCase().includes(search.toLowerCase())
+  );
 
-  const toggleExpand = (id: string) => {
-    setExpandedRows((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
+  const sorted = sortCol
+    ? [...filtered].sort((a, b) => {
+        const va = String((a as never)[sortCol] ?? "");
+        const vb = String((b as never)[sortCol] ?? "");
+        const cmp = isNaN(Number(va)) ? va.localeCompare(vb) : Number(va) - Number(vb);
+        return sortDir === "asc" ? cmp : -cmp;
+      })
+    : filtered;
+
+  const paginated = sorted.slice((page - 1) * pageSize, page * pageSize);
+
+  const toggleSort = (col: PlanSortCol) => {
+    if (sortCol === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortCol(col); setSortDir("asc"); }
+    setPage(1);
+  };
+
+  const handleDesactivar = (plan: Plan) => setAlertPlan(plan);
+  const confirmDesactivar = () => {
+    if (!alertPlan) return;
+    const newEstado = alertPlan.estado === "Activo" ? "Inactivo" : "Activo";
+    setPlanes((prev) => prev.map((p) => p.id === alertPlan.id ? { ...p, estado: newEstado } : p));
+    setToastMsg({
+      title: newEstado === "Inactivo" ? "Plan desactivado" : "Plan reactivado",
+      message: `"${alertPlan.nombre}" ahora está ${newEstado.toLowerCase()}.`,
     });
-  };
-
-  const toggleRuta = (permiso: string, ruta: string) => {
-    setForm((f) => {
-      const arr = f[permiso as keyof typeof f] as string[];
-      return { ...f, [permiso]: arr.includes(ruta) ? arr.filter((r) => r !== ruta) : [...arr, ruta] };
-    });
-  };
-
-  const toggleEditRuta = (permiso: string, ruta: string) => {
-    if (!editRol) return;
-    setEditRol((prev) => {
-      if (!prev) return prev;
-      const arr = prev.permisos[permiso as keyof typeof prev.permisos];
-      return { ...prev, permisos: { ...prev.permisos, [permiso]: arr.includes(ruta) ? arr.filter((r) => r !== ruta) : [...arr, ruta] } };
-    });
-  };
-
-  const handleCreate = () => {
-    setRoles((prev) => [{ id: String(Date.now()), nombre: form.nombre, permisos: { ver: form.ver, editar: form.editar, crear: form.crear, deshabilitar: form.deshabilitar } }, ...prev]);
-    setToastMsg({ title: "¡Rol creado!", message: "El rol se ha creado correctamente." });
     setToast(true);
-    setModalOpen(false);
-    setForm({ nombre: "", ver: [], editar: [], crear: [], deshabilitar: [] });
+    setAlertPlan(null);
   };
 
-  const handleSaveEdit = () => {
-    if (!editRol) return;
-    setRoles((prev) => prev.map((r) => r.id === editRol.id ? editRol : r));
-    setToastMsg({ title: "¡Rol actualizado!", message: "El rol se ha actualizado correctamente." });
-    setToast(true);
-    setEditRol(null);
-  };
+  const thBase = "px-4 py-2.5 text-left text-xs font-semibold text-neutral-500";
+  const thSort = `${thBase} cursor-pointer hover:text-neutral-700 hover:bg-neutral-100 transition-colors`;
 
-  const handleDelete = () => {
-    if (!alertRol) return;
-    setRoles((prev) => prev.filter((r) => r.id !== alertRol.id));
-    setToastMsg({ title: "Rol eliminado", message: `El rol "${alertRol.nombre}" ha sido eliminado.` });
-    setToast(true);
-  };
-
-  const permisoSection = (permiso: string, items: string[], onToggle: (p: string, r: string) => void, readOnly?: boolean) => (
-    <div key={permiso}>
-      <label className="text-xs font-semibold text-neutral-700 block mb-2">{permiso.charAt(0).toUpperCase() + permiso.slice(1)}</label>
-      <div className="rounded-lg border border-neutral-200 p-3">
-        {readOnly ? (
-          <div className="flex flex-wrap gap-1.5">
-            {items.length > 0 ? items.map((r) => (
-              <span key={r} className="inline-flex rounded-md border border-neutral-200 bg-neutral-100 px-2 py-0.5 text-xs text-neutral-700">{r}</span>
-            )) : <span className="text-xs text-neutral-400">Sin permisos asignados</span>}
-          </div>
-        ) : (
-          <>
-            <p className="text-xs text-neutral-400 mb-2">Seleccione las rutas a asignar</p>
-            <div className="flex flex-wrap gap-1.5">
-              {items.map((r) => (
-                <span key={r} className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-neutral-100 px-2 py-0.5 text-xs text-neutral-700">
-                  {r}
-                  <button onClick={() => onToggle(permiso, r)} className="text-neutral-400 hover:text-neutral-700">×</button>
-                </span>
-              ))}
-              <select className="h-6 rounded border-0 text-xs text-neutral-400 outline-none bg-transparent cursor-pointer" onChange={(e) => { if (e.target.value) { onToggle(permiso, e.target.value); e.target.value = ""; } }}>
-                <option value="">+ Agregar ruta</option>
-                {RUTAS.filter((r) => !items.includes(r)).map((r) => <option key={r} value={r}>{r}</option>)}
-              </select>
-            </div>
-          </>
+  return (
+    <>
+      {/* Search + Create */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+        <div className="relative w-full sm:w-auto">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+          <input
+            className="h-9 w-full sm:min-w-[280px] rounded-lg border border-neutral-300 pl-8 pr-3 text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
+            placeholder="Buscar por nombre de plan"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          />
+        </div>
+        {canCrear("Planes") && (
+          <Button size="md" icon={<Plus size={14} />} onClick={() => router.push("/planes/crear")}>
+            Crear plan
+          </Button>
         )}
       </div>
-    </div>
+
+      {filtered.length === 0 && !search ? (
+        <EmptyState icon={<Layers size={24} />} title="No hay planes registrados" onCreateClick={() => router.push("/planes/crear")} />
+      ) : (
+        <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
+          <div className="table-scroll">
+            <table className="w-full min-w-[800px]">
+              <thead className="sticky top-0 z-10">
+                <tr className="border-b border-neutral-100 bg-neutral-50">
+                  <th className={thSort} onClick={() => toggleSort("nombre")}>
+                    <span className="inline-flex items-center">Nombre del plan <SortIcon active={sortCol === "nombre"} dir={sortDir} /></span>
+                  </th>
+                  <th className={thBase}>Módulos</th>
+                  <th className={thSort} onClick={() => toggleSort("pedidosMax")}>
+                    <span className="inline-flex items-center">Pedidos máx. <SortIcon active={sortCol === "pedidosMax"} dir={sortDir} /></span>
+                  </th>
+                  <th className={thSort} onClick={() => toggleSort("sucursalesMax")}>
+                    <span className="inline-flex items-center">Sucursales máx. <SortIcon active={sortCol === "sucursalesMax"} dir={sortDir} /></span>
+                  </th>
+                  <th className={thSort} onClick={() => toggleSort("tenantsActivos")}>
+                    <span className="inline-flex items-center">Tenants activos <SortIcon active={sortCol === "tenantsActivos"} dir={sortDir} /></span>
+                  </th>
+                  <th className={thSort} onClick={() => toggleSort("estado")}>
+                    <span className="inline-flex items-center">Estado <SortIcon active={sortCol === "estado"} dir={sortDir} /></span>
+                  </th>
+                  <th className="w-10 py-2.5"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.map((plan) => (
+                  <tr key={plan.id} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => router.push(`/planes/${plan.id}`)}
+                        className="text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline text-left"
+                      >
+                        {plan.nombre}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3">
+                      <ModuleTags modulos={plan.modulos} />
+                    </td>
+                    <td className="px-4 py-3 text-sm text-neutral-700 tabular-nums">
+                      {plan.pedidosMax.toLocaleString("es-CL")}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-neutral-700 tabular-nums">
+                      {plan.sucursalesMax}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-neutral-700 tabular-nums">
+                      {plan.tenantsActivos}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge variant={statusVariant(plan.estado) as never}>{plan.estado}</Badge>
+                    </td>
+                    <td className="w-10 py-3 pr-3">
+                      <RowMenu actions={[
+                        { label: "Ver detalle", onClick: () => router.push(`/planes/${plan.id}`) },
+                        ...(canEditar("Planes") ? [{ label: "Editar", onClick: () => router.push(`/planes/${plan.id}/editar`) }] : []),
+                        ...(canDeshabilitar("Planes")
+                          ? [{
+                              label: plan.estado === "Activo" ? "Desactivar" : "Reactivar",
+                              onClick: () => handleDesactivar(plan),
+                              variant: (plan.estado === "Activo" ? "danger" : "default") as "danger" | "default",
+                            }]
+                          : []),
+                      ]} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Pagination page={page} total={filtered.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
+        </div>
+      )}
+
+      <AlertModal
+        open={!!alertPlan}
+        onClose={() => setAlertPlan(null)}
+        onConfirm={confirmDesactivar}
+        title={alertPlan?.estado === "Activo" ? "Desactivar plan" : "Reactivar plan"}
+        message={
+          alertPlan?.estado === "Activo"
+            ? `Al desactivar "${alertPlan?.nombre}", no podrá ser asignado a nuevos contratos.${alertPlan?.tenantsActivos ? ` Actualmente tiene ${alertPlan.tenantsActivos} tenant(s) activos que seguirán vigentes hasta el vencimiento de sus contratos.` : ""} ¿Deseas continuar?`
+            : `¿Deseas reactivar el plan "${alertPlan?.nombre}"? Volverá a estar disponible para nuevos contratos.`
+        }
+        confirmLabel={alertPlan?.estado === "Activo" ? "Desactivar" : "Reactivar"}
+      />
+
+      <Toast open={toast} onClose={() => setToast(false)} type="success" title={toastMsg.title} message={toastMsg.message} />
+    </>
   );
+}
+
+function TrialConfigsTab() {
+  const router = useRouter();
+  const { canCrear, canEditar, canDeshabilitar } = useRole();
+  const [configs, setConfigs] = useState<TrialConfig[]>(MOCK_TRIAL_CONFIGS);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [sortCol, setSortCol] = useState<TrialSortCol>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [alertConfig, setAlertConfig] = useState<TrialConfig | null>(null);
+  const [toast, setToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState({ title: "", message: "" });
+
+  const filtered = configs.filter((c) =>
+    `${c.nombre} ${c.descripcion}`.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const sorted = sortCol
+    ? [...filtered].sort((a, b) => {
+        const va = String((a as never)[sortCol] ?? "");
+        const vb = String((b as never)[sortCol] ?? "");
+        const cmp = isNaN(Number(va)) ? va.localeCompare(vb) : Number(va) - Number(vb);
+        return sortDir === "asc" ? cmp : -cmp;
+      })
+    : filtered;
+
+  const paginated = sorted.slice((page - 1) * pageSize, page * pageSize);
+
+  const toggleSort = (col: TrialSortCol) => {
+    if (sortCol === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortCol(col); setSortDir("asc"); }
+    setPage(1);
+  };
+
+  const handleDesactivar = (config: TrialConfig) => setAlertConfig(config);
+  const confirmDesactivar = () => {
+    if (!alertConfig) return;
+    const newEstado = alertConfig.estado === "Activo" ? "Inactivo" : "Activo";
+    setConfigs((prev) => prev.map((c) => c.id === alertConfig.id ? { ...c, estado: newEstado } : c));
+    setToastMsg({
+      title: newEstado === "Inactivo" ? "Configuración desactivada" : "Configuración reactivada",
+      message: `"${alertConfig.nombre}" ahora está ${newEstado.toLowerCase()}.`,
+    });
+    setToast(true);
+    setAlertConfig(null);
+  };
+
+  const thBase = "px-4 py-2.5 text-left text-xs font-semibold text-neutral-500";
+  const thSort = `${thBase} cursor-pointer hover:text-neutral-700 hover:bg-neutral-100 transition-colors`;
+
+  return (
+    <>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+        <div className="relative w-full sm:w-auto">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+          <input
+            className="h-9 w-full sm:min-w-[280px] rounded-lg border border-neutral-300 pl-8 pr-3 text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
+            placeholder="Buscar configuración de trial"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          />
+        </div>
+        {canCrear("Planes") && (
+          <Button size="md" icon={<Plus size={14} />} onClick={() => router.push("/planes/trial/crear")}>
+            Crear configuración
+          </Button>
+        )}
+      </div>
+
+      {filtered.length === 0 && !search ? (
+        <EmptyState icon={<Layers size={24} />} title="No hay configuraciones de trial" onCreateClick={() => router.push("/planes/trial/crear")} />
+      ) : (
+        <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
+          <div className="table-scroll">
+            <table className="w-full min-w-[900px]">
+              <thead className="sticky top-0 z-10">
+                <tr className="border-b border-neutral-100 bg-neutral-50">
+                  <th className={thSort} onClick={() => toggleSort("nombre")}>
+                    <span className="inline-flex items-center">Nombre <SortIcon active={sortCol === "nombre"} dir={sortDir} /></span>
+                  </th>
+                  <th className={thSort} onClick={() => toggleSort("duracionDias")}>
+                    <span className="inline-flex items-center">Duración (días) <SortIcon active={sortCol === "duracionDias"} dir={sortDir} /></span>
+                  </th>
+                  <th className={thBase}>Módulos</th>
+                  <th className={thSort} onClick={() => toggleSort("pedidosMax")}>
+                    <span className="inline-flex items-center">Pedidos máx. <SortIcon active={sortCol === "pedidosMax"} dir={sortDir} /></span>
+                  </th>
+                  <th className={thSort} onClick={() => toggleSort("sucursalesMax")}>
+                    <span className="inline-flex items-center">Sucursales máx. <SortIcon active={sortCol === "sucursalesMax"} dir={sortDir} /></span>
+                  </th>
+                  <th className={thSort} onClick={() => toggleSort("tenantsActivos")}>
+                    <span className="inline-flex items-center">Tenants activos <SortIcon active={sortCol === "tenantsActivos"} dir={sortDir} /></span>
+                  </th>
+                  <th className={thBase}>Default</th>
+                  <th className={thSort} onClick={() => toggleSort("estado")}>
+                    <span className="inline-flex items-center">Estado <SortIcon active={sortCol === "estado"} dir={sortDir} /></span>
+                  </th>
+                  <th className="w-10 py-2.5"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.map((config) => (
+                  <tr key={config.id} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => router.push(`/planes/trial/${config.id}`)}
+                        className="text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline text-left"
+                      >
+                        {config.nombre}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-neutral-700 tabular-nums">{config.duracionDias}</td>
+                    <td className="px-4 py-3"><ModuleTags modulos={config.modulos} /></td>
+                    <td className="px-4 py-3 text-sm text-neutral-700 tabular-nums">{config.pedidosMax.toLocaleString("es-CL")}</td>
+                    <td className="px-4 py-3 text-sm text-neutral-700 tabular-nums">{config.sucursalesMax}</td>
+                    <td className="px-4 py-3 text-sm text-neutral-700 tabular-nums">{config.tenantsActivos}</td>
+                    <td className="px-4 py-3">
+                      {config.esDefault
+                        ? <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-semibold text-amber-700"><Star size={10} className="fill-amber-400 text-amber-400" /> Default</span>
+                        : <span className="text-xs text-neutral-400">—</span>}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge variant={statusVariant(config.estado) as never}>{config.estado}</Badge>
+                    </td>
+                    <td className="w-10 py-3 pr-3">
+                      <RowMenu actions={[
+                        { label: "Ver detalle", onClick: () => router.push(`/planes/trial/${config.id}`) },
+                        ...(canEditar("Planes") ? [{ label: "Editar", onClick: () => router.push(`/planes/trial/${config.id}/editar`) }] : []),
+                        ...(canDeshabilitar("Planes")
+                          ? [{
+                              label: config.estado === "Activo" ? "Desactivar" : "Reactivar",
+                              onClick: () => handleDesactivar(config),
+                              variant: (config.estado === "Activo" ? "danger" : "default") as "danger" | "default",
+                            }]
+                          : []),
+                      ]} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Pagination page={page} total={filtered.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
+        </div>
+      )}
+
+      <AlertModal
+        open={!!alertConfig}
+        onClose={() => setAlertConfig(null)}
+        onConfirm={confirmDesactivar}
+        title={alertConfig?.estado === "Activo" ? "Desactivar configuración" : "Reactivar configuración"}
+        message={
+          alertConfig?.estado === "Activo"
+            ? `Al desactivar "${alertConfig?.nombre}", no se podrá usar en nuevos contratos trial.${alertConfig?.tenantsActivos ? ` Actualmente tiene ${alertConfig.tenantsActivos} tenant(s) usando esta configuración.` : ""} ¿Deseas continuar?`
+            : `¿Deseas reactivar "${alertConfig?.nombre}"?`
+        }
+        confirmLabel={alertConfig?.estado === "Activo" ? "Desactivar" : "Reactivar"}
+      />
+
+      <Toast open={toast} onClose={() => setToast(false)} type="success" title={toastMsg.title} message={toastMsg.message} />
+    </>
+  );
+}
+
+/* ── Main Page ── */
+
+type Tab = "planes" | "trial";
+
+export default function PlanesPage() {
+  const [activeTab, setActiveTab] = useState<Tab>("planes");
+
+  const tabs: { key: Tab; label: string }[] = [
+    { key: "planes", label: "Planes" },
+    { key: "trial", label: "Configuraciones de Trial" },
+  ];
 
   return (
     <MainLayout>
       <div className="flex flex-col min-h-full">
         <PageHeader
           breadcrumb={[{ label: "Inicio", href: "/" }, { label: "Planes" }]}
-          title="Roles"
-          description="Administración y gestión de roles para asignar a tenants."
-          actions={
-            <div className="flex items-center gap-2">
-              {roles.length > 0 && (
-                <div className="relative">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                  <input className="h-8 w-56 rounded-lg border border-neutral-300 pl-8 pr-3 text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400" placeholder="Busca por nombre de rol" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
-                </div>
-              )}
-              {canCrear("Planes") && <Button size="md" icon={<Plus size={14} />} onClick={() => setModalOpen(true)}>Crear</Button>}
-            </div>
-          }
+          title="Planes y Licenciamientos"
+          description="Administración de planes comerciales y configuraciones de trial"
         />
-        <div className="flex-1 px-6 pb-6">
-          {roles.length === 0 ? (
-            <EmptyState icon={<Layers size={24} />} title="No tienes roles creados aún" onCreateClick={() => setModalOpen(true)} />
-          ) : (
-            <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
-              <div className="table-scroll">
-                <table className="w-full min-w-[700px]">
-                  <thead>
-                    <tr className="border-b border-neutral-100 bg-neutral-50">
-                      <th className="w-10 py-2.5"></th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Nombre</th>
-                      <th className="w-8 py-2.5"></th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Ver</th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Editar</th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Crear</th>
-                      <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500">Deshabilitar</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginated.map((r) => {
-                      const expanded = expandedRows.has(r.id);
-                      return (
-                        <tr key={r.id} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
-                          <td className="w-10 py-3 pl-3">
-                            <button onClick={() => toggleExpand(r.id)} className="flex h-6 w-6 items-center justify-center rounded text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors">
-                              {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                            </button>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className="text-sm font-medium text-neutral-900">{r.nombre}</span>
-                            {r.protegido && <Badge variant="active">Protegido</Badge>}
-                          </td>
-                          <td className="w-8 py-3 pr-2">
-                            <RowMenu actions={[
-                              { label: "Ver", onClick: () => setViewRol(r) },
-                              ...(!r.protegido && canEditar("Planes") ? [{ label: "Editar", onClick: () => setEditRol(r) }] : []),
-                              ...(!r.protegido && canDeshabilitar("Planes") ? [{ label: "Eliminar", onClick: () => setAlertRol(r), variant: "danger" as const }] : []),
-                            ]} />
-                          </td>
-                          <td className="px-4 py-3"><BadgeList items={r.permisos.ver} expanded={expanded} /></td>
-                          <td className="px-4 py-3"><BadgeList items={r.permisos.editar} expanded={expanded} /></td>
-                          <td className="px-4 py-3"><BadgeList items={r.permisos.crear} expanded={expanded} /></td>
-                          <td className="px-4 py-3"><BadgeList items={r.permisos.deshabilitar} expanded={expanded} /></td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <Pagination page={page} total={filtered.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
-            </div>
-          )}
+
+        <div className="flex-1 px-4 sm:px-6 pb-6">
+          {/* Tabs */}
+          <div className="flex gap-1 mb-5 border-b border-neutral-200">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${
+                  activeTab === tab.key
+                    ? "text-primary-600"
+                    : "text-neutral-500 hover:text-neutral-700"
+                }`}
+              >
+                {tab.label}
+                {activeTab === tab.key && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-500 rounded-t" />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {activeTab === "planes" ? <PlanesTab /> : <TrialConfigsTab />}
         </div>
       </div>
-
-      {/* Create Modal */}
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Rol" subtitle="Complete datos y seleccione los módulos de permisos asignados al rol.">
-        <div className="flex flex-col gap-5">
-          <Input label="Nombre del rol" placeholder="Ingrese" value={form.nombre} onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))} />
-          {(["ver", "editar", "crear", "deshabilitar"] as const).map((p) =>
-            permisoSection(p, form[p], toggleRuta)
-          )}
-          <Button className="w-full mt-2" disabled={!form.nombre} onClick={handleCreate}>Crear rol</Button>
-        </div>
-      </Modal>
-
-      {/* View Modal (read-only) */}
-      <Modal open={!!viewRol} onClose={() => setViewRol(null)} title={viewRol?.nombre || ""} subtitle="Detalle del rol (solo lectura)">
-        {viewRol && (
-          <div className="flex flex-col gap-5">
-            <div>
-              <label className="text-xs font-semibold text-neutral-700 block mb-1">Nombre del rol</label>
-              <p className="text-sm text-neutral-900 bg-neutral-50 rounded-lg px-3 py-2 border border-neutral-200">{viewRol.nombre}</p>
-            </div>
-            {(["ver", "editar", "crear", "deshabilitar"] as const).map((p) =>
-              permisoSection(p, viewRol.permisos[p], () => {}, true)
-            )}
-          </div>
-        )}
-      </Modal>
-
-      {/* Edit Modal */}
-      <Modal open={!!editRol} onClose={() => setEditRol(null)} title={`Editar: ${editRol?.nombre || ""}`} subtitle="Modifique los permisos asignados al rol.">
-        {editRol && (
-          <div className="flex flex-col gap-5">
-            <Input label="Nombre del rol" placeholder="Ingrese" value={editRol.nombre} onChange={(e) => setEditRol((prev) => prev ? { ...prev, nombre: e.target.value } : prev)} />
-            {(["ver", "editar", "crear", "deshabilitar"] as const).map((p) =>
-              permisoSection(p, editRol.permisos[p], toggleEditRuta)
-            )}
-            <Button className="w-full mt-2" disabled={!editRol.nombre} onClick={handleSaveEdit}>Guardar cambios</Button>
-          </div>
-        )}
-      </Modal>
-
-      {/* Delete Alert */}
-      <AlertModal
-        open={!!alertRol}
-        onClose={() => setAlertRol(null)}
-        onConfirm={handleDelete}
-        title="Eliminar rol"
-        message={`¿Estás seguro de que deseas eliminar el rol "${alertRol?.nombre}"? Esta acción no se puede deshacer.`}
-        confirmLabel="Eliminar"
-      />
-
-      <Toast open={toast} onClose={() => setToast(false)} type="success" title={toastMsg.title} message={toastMsg.message} />
     </MainLayout>
   );
 }
