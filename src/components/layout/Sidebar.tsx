@@ -127,9 +127,7 @@ export default function Sidebar({ onClose }: SidebarProps = {}) {
       className="flex h-dvh flex-shrink-0 flex-col transition-all duration-200"
       style={{
         width: onClose ? "100%" : isCollapsed ? "64px" : "var(--sidebar-w)",
-        backgroundColor: onClose ? "rgba(29,29,31,0.90)" : "var(--sidebar-bg)",
-        backdropFilter: onClose ? "blur(12px)" : undefined,
-        WebkitBackdropFilter: onClose ? "blur(12px)" : undefined,
+        backgroundColor: onClose ? "#1d1d1f" : "var(--sidebar-bg)",
       }}
     >
       {/* Logo + collapse toggle */}
