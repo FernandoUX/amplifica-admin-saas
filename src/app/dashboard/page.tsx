@@ -106,7 +106,7 @@ export default function DashboardPage() {
         breadcrumb={[{ label: "Inicio" }, { label: "Dashboard" }]}
         title="Dashboard"
         description="Resumen general de la plataforma"
-        actions={<DashboardFilterButton filters={filters} onChange={setFilters} />}
+        actions={<div className="hidden sm:block"><DashboardFilterButton filters={filters} onChange={setFilters} /></div>}
       />
 
       <div className="px-4 sm:px-6 pb-8 space-y-6">
