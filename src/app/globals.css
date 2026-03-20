@@ -145,11 +145,11 @@ html.dark .btn-primary:active { background-color: #8CA9FF; }
      delta-amber  : #fbbf24 (amber-400)    → 9.69:1
      delta-neutral: #D5D5D7 (neutral-300)  → 10.98:1
  ─────────────────────────────────────────────────────────────────────────── */
-.delta-green   { color: #166534; background-color: #dcfce7; padding: 2px 8px; border-radius: 9999px; }
-.delta-blue    { color: #1F1DDE; background-color: #e0e7ff; padding: 2px 8px; border-radius: 9999px; }
-.delta-red     { color: #b91c1c; background-color: #fee2e2; padding: 2px 8px; border-radius: 9999px; }
-.delta-amber   { color: #b45309; background-color: #fef3c7; padding: 2px 8px; border-radius: 9999px; }
-.delta-neutral { color: #545459; background-color: #f4f4f5; padding: 2px 8px; border-radius: 9999px; }
+.delta-green   { color: #166534; background-color: #dcfce7; padding: 2px 8px; border-radius: 9999px; white-space: nowrap; }
+.delta-blue    { color: #1F1DDE; background-color: #e0e7ff; padding: 2px 8px; border-radius: 9999px; white-space: nowrap; }
+.delta-red     { color: #b91c1c; background-color: #fee2e2; padding: 2px 8px; border-radius: 9999px; white-space: nowrap; }
+.delta-amber   { color: #b45309; background-color: #fef3c7; padding: 2px 8px; border-radius: 9999px; white-space: nowrap; }
+.delta-neutral { color: #545459; background-color: #f4f4f5; padding: 2px 8px; border-radius: 9999px; white-space: nowrap; }
 
 html.dark .delta-green   { color: #4ade80; background-color: #052e16; }
 html.dark .delta-blue    { color: #8CA9FF; background-color: #1e1b4b; }
