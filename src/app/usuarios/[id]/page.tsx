@@ -10,7 +10,7 @@ import Toast from "@/components/ui/Toast";
 import AlertModal from "@/components/ui/AlertModal";
 import { MOCK_USUARIOS, MOCK_TENANTS, MOCK_EMPRESAS } from "@/lib/mock-data";
 import { useRole } from "@/lib/role-context";
-import { Pencil, UserCircle, Mail, Send } from "lucide-react";
+import { IconPencil as Pencil, IconUserCircle as UserCircle, IconMail as Mail, IconSend as Send, IconChevronRight } from "@tabler/icons-react";
 
 /* ── Helpers ── */
 
@@ -57,12 +57,12 @@ export default function UsuarioDetailPage({ params }: { params: Promise<{ id: st
         <div className="px-4 sm:px-6 pt-5 pb-4">
           <nav className="flex items-center gap-1 text-xs text-neutral-400 mb-3">
             <Link href="/" className="hover:text-neutral-600">Inicio</Link>
-            <span>/</span>
+            <IconChevronRight size={12} className="text-neutral-400" />
             <Link href="/usuarios" className="hover:text-neutral-600">Usuarios</Link>
-            <span>/</span>
+            <IconChevronRight size={12} className="text-neutral-400" />
             <span>No encontrado</span>
           </nav>
-          <h1 className="text-xl font-bold text-neutral-900">Usuario no encontrado</h1>
+          <h1 className="text-2xl font-bold text-neutral-900">Usuario no encontrado</h1>
         </div>
       </MainLayout>
     );
@@ -80,9 +80,9 @@ export default function UsuarioDetailPage({ params }: { params: Promise<{ id: st
       <div className="px-4 sm:px-6 pt-5 pb-0">
         <nav className="flex items-center gap-1 text-xs text-neutral-400">
           <Link href="/" className="hover:text-neutral-600 transition-colors">Inicio</Link>
-          <span>/</span>
+          <IconChevronRight size={12} className="text-neutral-400" />
           <Link href="/usuarios" className="hover:text-neutral-600 transition-colors">Usuarios</Link>
-          <span>/</span>
+          <IconChevronRight size={12} className="text-neutral-400" />
           <span>{usuario.nombres} {usuario.apellidos}</span>
         </nav>
       </div>
@@ -95,14 +95,14 @@ export default function UsuarioDetailPage({ params }: { params: Promise<{ id: st
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-bold text-neutral-900">{usuario.nombres} {usuario.apellidos}</h1>
+              <h1 className="text-2xl font-bold text-neutral-900">{usuario.nombres} {usuario.apellidos}</h1>
               <Badge variant={estado.variant as never}>{estado.label}</Badge>
               <Badge variant={tipo.variant as never}>{tipo.label}</Badge>
             </div>
             <p className="text-sm text-neutral-500 mt-0.5 truncate">{usuario.email}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="hidden sm:flex items-center gap-2 shrink-0">
           {usuario.estado === "Pendiente de activación" && (
             <Button
               size="lg"
@@ -135,7 +135,7 @@ export default function UsuarioDetailPage({ params }: { params: Promise<{ id: st
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === tab
-                  ? "border-primary-500 text-primary-600"
+                  ? "border-primary-500 text-primary-600 tab-active"
                   : "border-transparent text-neutral-500 hover:text-neutral-700"
               }`}
             >
@@ -251,6 +251,19 @@ export default function UsuarioDetailPage({ params }: { params: Promise<{ id: st
         )}
 
       </div>
+
+      {/* Mobile sticky bottom bar */}
+      {canEditar("Usuarios") && usuario.estado !== "Inactivo" && (
+        <div className="fixed bottom-0 inset-x-0 z-30 border-t border-neutral-200 bg-white px-4 py-3 sm:hidden">
+          <Button
+            className="w-full"
+            icon={<Pencil size={14} />}
+            onClick={() => router.push(`/usuarios/${id}/editar`)}
+          >
+            Editar usuario
+          </Button>
+        </div>
+      )}
 
       <Toast open={toast} onClose={() => setToast(false)} type="success" title={toastMsg.title} message={toastMsg.message} />
     </MainLayout>

@@ -1,0 +1,5 @@
+[     565ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://amplifica-rho.vercel.app/favicon.ico:0
+[     565ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://amplifica-rho.vercel.app/dashboard?_rsc=tbb7g:0
+[     565ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://amplifica-rho.vercel.app/configuracion?_rsc=tbb7g:0
+[   54140ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://amplifica-rho.vercel.app/products/extra-life-tropical-delight.png:0
+[   54141ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://amplifica-rho.vercel.app/products/extra-life-variety-pack.png:0

@@ -7,7 +7,8 @@ import Badge from "@/components/ui/Badge";
 import Pagination from "@/components/ui/Pagination";
 import { MOCK_AUDIT_LOG } from "@/lib/mock-data";
 import { AuditEntidad, AuditAccion } from "@/lib/types";
-import { Search, ChevronUp, ChevronDown, Download, ShieldCheck } from "lucide-react";
+import { IconSearch as Search, IconChevronUp as ChevronUp, IconChevronDown as ChevronDown, IconDownload as Download, IconShieldCheck as ShieldCheck } from "@tabler/icons-react";
+import DateRangePicker from "@/components/ui/DateRangePicker";
 
 /* ── Helpers ── */
 
@@ -31,7 +32,7 @@ const formatTimestamp = (ts: string) => {
 type SortCol = "timestamp" | "usuarioNombre" | "entidad" | "accion" | null;
 
 function SortIcon({ active, dir }: { active: boolean; dir: "asc" | "desc" }) {
-  if (!active) return <ChevronUp size={11} className="text-neutral-300 ml-0.5" />;
+  if (!active) return <ChevronUp size={11} className="text-neutral-600 ml-0.5" />;
   return dir === "asc"
     ? <ChevronUp size={11} className="text-primary-500 ml-0.5" />
     : <ChevronDown size={11} className="text-primary-500 ml-0.5" />;
@@ -105,8 +106,8 @@ export default function AuditLogPage() {
     URL.revokeObjectURL(url);
   };
 
-  const selectBase = "h-9 rounded-lg border border-neutral-300 px-3 text-sm text-neutral-700 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 bg-white";
-  const thBase = "px-4 py-2.5 text-left text-xs font-semibold text-neutral-500";
+  const selectBase = "h-[44px] w-full rounded-lg border border-neutral-300 pl-3 pr-8 text-sm text-neutral-700 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100 bg-white appearance-none";
+  const thBase = "px-4 py-2.5 text-left text-sm font-semibold text-neutral-600";
   const thSort = `${thBase} cursor-pointer hover:text-neutral-700 hover:bg-neutral-100 transition-colors`;
 
   const hasFilters = filterEntidad || filterAccion || filterDesde || filterHasta || search;
@@ -119,61 +120,70 @@ export default function AuditLogPage() {
           title="Audit Log"
           description="Registro inmutable de todas las acciones realizadas en el sistema"
           actions={
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                <input
-                  className="h-[44px] w-full sm:min-w-[280px] rounded-lg border border-neutral-300 pl-8 pr-3 text-base md:text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
-                  placeholder="Buscar en el log…"
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                />
-              </div>
+            <div className="relative w-full sm:w-auto">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+              <input
+                className="h-[44px] w-full rounded-lg bg-neutral-100 pl-8 pr-3 text-base md:text-sm text-neutral-800 placeholder:text-neutral-500 outline-none focus:bg-white focus:ring-2 focus:ring-primary-100"
+                placeholder="Buscar en el log…"
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              />
             </div>
           }
         />
 
         <div className="flex-1 px-4 sm:px-6 pb-6">
           {/* Filtros */}
-          <div className="flex flex-wrap items-end gap-3 mb-4">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-neutral-500">Entidad</label>
-              <select value={filterEntidad} onChange={(e) => { setFilterEntidad(e.target.value); setPage(1); }} className={selectBase}>
-                <option value="">Todas</option>
-                {ENTIDADES.map((e) => <option key={e} value={e}>{e}</option>)}
-              </select>
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-end gap-3 mb-4">
+            <div className="grid grid-cols-2 sm:contents gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-neutral-500">Entidad</label>
+                <div className="relative">
+                  <select value={filterEntidad} onChange={(e) => { setFilterEntidad(e.target.value); setPage(1); }} className={selectBase}>
+                    <option value="">Todas</option>
+                    {ENTIDADES.map((e) => <option key={e} value={e}>{e}</option>)}
+                  </select>
+                  <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-neutral-500">Acción</label>
+                <div className="relative">
+                  <select value={filterAccion} onChange={(e) => { setFilterAccion(e.target.value); setPage(1); }} className={selectBase}>
+                    <option value="">Todas</option>
+                    {ACCIONES.map((a) => <option key={a} value={a}>{a}</option>)}
+                  </select>
+                  <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+                </div>
+              </div>
             </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-neutral-500">Acción</label>
-              <select value={filterAccion} onChange={(e) => { setFilterAccion(e.target.value); setPage(1); }} className={selectBase}>
-                <option value="">Todas</option>
-                {ACCIONES.map((a) => <option key={a} value={a}>{a}</option>)}
-              </select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-neutral-500">Desde</label>
-              <input type="date" value={filterDesde} onChange={(e) => { setFilterDesde(e.target.value); setPage(1); }} className={selectBase} />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-neutral-500">Hasta</label>
-              <input type="date" value={filterHasta} onChange={(e) => { setFilterHasta(e.target.value); setPage(1); }} className={selectBase} />
-            </div>
-            <div className="flex items-center gap-2 ml-auto">
-              {hasFilters && (
+            <div className="flex items-end justify-between sm:contents gap-3">
+              <div className="flex flex-col gap-1 flex-1 sm:flex-none">
+                <label className="text-xs font-medium text-neutral-500">Rango de fechas</label>
+                <DateRangePicker
+                  startDate={filterDesde}
+                  endDate={filterHasta}
+                  onStartChange={(v) => { setFilterDesde(v); setPage(1); }}
+                  onEndChange={(v) => { setFilterHasta(v); setPage(1); }}
+                />
+              </div>
+              <div className="flex items-center gap-2 sm:ml-auto">
+                {hasFilters && (
+                  <button
+                    onClick={() => { setFilterEntidad(""); setFilterAccion(""); setFilterDesde(""); setFilterHasta(""); setSearch(""); setPage(1); }}
+                    className="h-9 px-3 rounded-lg text-sm text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
+                  >
+                    Limpiar filtros
+                  </button>
+                )}
                 <button
-                  onClick={() => { setFilterEntidad(""); setFilterAccion(""); setFilterDesde(""); setFilterHasta(""); setSearch(""); setPage(1); }}
-                  className="h-9 px-3 rounded-lg text-sm text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
+                  onClick={exportCSV}
+                  className="inline-flex items-center gap-1.5 h-[44px] px-3 rounded-lg border border-neutral-300 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
                 >
-                  Limpiar filtros
+                  <Download size={14} />
+                  Exportar CSV
                 </button>
-              )}
-              <button
-                onClick={exportCSV}
-                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-neutral-300 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-              >
-                <Download size={14} />
-                Exportar CSV
-              </button>
+              </div>
             </div>
           </div>
 
@@ -186,7 +196,37 @@ export default function AuditLogPage() {
               </p>
             </div>
           ) : (
-            <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
+            <>
+            {/* Mobile cards */}
+            <div className="md:hidden flex flex-col gap-3">
+              {paginated.map((entry) => (
+                <div key={entry.id} className="rounded-xl border border-neutral-200 bg-white p-4 space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-xs text-neutral-500">{formatTimestamp(entry.timestamp)}</span>
+                    <Badge variant={accionBadge(entry.accion) as never}>{entry.accion}</Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+                    <span className="text-neutral-600">Usuario</span>
+                    <span className="text-neutral-800 font-medium">{entry.usuarioNombre}</span>
+                    <span className="text-neutral-600">Entidad</span>
+                    <span className="text-neutral-800">{entry.entidad} <span className="text-xs text-neutral-400">({entry.entidadLabel})</span></span>
+                    <span className="text-neutral-600">ID Entidad</span>
+                    <span className="text-neutral-800 font-mono text-xs">{entry.entidadId}</span>
+                    <span className="text-neutral-600">Campo modificado</span>
+                    <span className="text-neutral-800">{entry.campo ?? "—"}</span>
+                    <span className="text-neutral-600">Valor anterior</span>
+                    <span className="text-neutral-800 truncate">{entry.valorAnterior ?? "—"}</span>
+                    <span className="text-neutral-600">Valor nuevo</span>
+                    <span className="text-neutral-800 truncate">{entry.valorNuevo ?? "—"}</span>
+                    <span className="text-neutral-600">IP</span>
+                    <span className="text-neutral-800 font-mono text-xs">{entry.ip}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block rounded-xl border border-neutral-200 bg-white overflow-hidden">
               <div className="table-scroll">
                 <table className="w-full min-w-[1200px]">
                   <thead className="sticky top-0 z-10">
@@ -226,8 +266,8 @@ export default function AuditLogPage() {
                           <Badge variant={accionBadge(e.accion) as never}>{e.accion}</Badge>
                         </td>
                         <td className="px-4 py-3 text-sm text-neutral-600">{e.campo ?? "—"}</td>
-                        <td className="px-4 py-3 text-sm text-neutral-500 max-w-[160px] truncate">{e.valorAnterior ?? "—"}</td>
-                        <td className="px-4 py-3 text-sm text-neutral-500 max-w-[160px] truncate">{e.valorNuevo ?? "—"}</td>
+                        <td className="px-4 py-3 text-sm text-neutral-600 max-w-[160px] truncate">{e.valorAnterior ?? "—"}</td>
+                        <td className="px-4 py-3 text-sm text-neutral-600 max-w-[160px] truncate">{e.valorNuevo ?? "—"}</td>
                         <td className="px-4 py-3 text-xs text-neutral-400 font-mono">{e.ip}</td>
                       </tr>
                     ))}
@@ -236,6 +276,12 @@ export default function AuditLogPage() {
               </div>
               <Pagination page={page} total={filtered.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
             </div>
+
+            {/* Mobile pagination */}
+            <div className="md:hidden">
+              <Pagination page={page} total={filtered.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
+            </div>
+            </>
           )}
         </div>
       </div>

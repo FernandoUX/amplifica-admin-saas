@@ -95,7 +95,7 @@ export default function EditarPlanPage({ params }: { params: Promise<{ id: strin
           description="Modifica los datos del plan"
         />
 
-        <div className="flex-1 px-4 sm:px-6 pb-6">
+        <div className="flex-1 px-4 sm:px-6 pb-20 md:pb-6">
           {/* Warning si tiene tenants activos */}
           {plan.tenantsActivos > 0 && (
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 mb-5">
@@ -160,11 +160,11 @@ export default function EditarPlanPage({ params }: { params: Promise<{ id: strin
               />
             </div>
 
-            <div className="flex gap-3 pt-3">
-              <Button variant="secondary" className="flex-1" onClick={handleCancel}>
+            <div className="fixed bottom-0 inset-x-0 bg-white border-t border-neutral-200 px-4 py-3 flex gap-3 md:relative md:inset-auto md:border-0 md:bg-transparent md:px-0 md:py-0 md:pt-3 z-20">
+              <Button variant="secondary" className="flex-1 md:flex-initial" onClick={handleCancel}>
                 Cancelar
               </Button>
-              <Button className="flex-1" onClick={handleSubmit}>
+              <Button className="flex-1 md:flex-initial" onClick={handleSubmit}>
                 Guardar cambios
               </Button>
             </div>

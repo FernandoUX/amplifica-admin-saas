@@ -8,7 +8,7 @@ import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import { MOCK_PLANES } from "@/lib/mock-data";
 import { useRole } from "@/lib/role-context";
-import { Edit2, Package, BarChart3, Building2 } from "lucide-react";
+import { IconEdit, IconPackage, IconChartBar, IconBuilding } from "@tabler/icons-react";
 
 export default function PlanDetallePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -41,7 +41,7 @@ export default function PlanDetallePage({ params }: { params: Promise<{ id: stri
           description={plan.descripcion || "Sin descripción"}
           actions={
             canEditar("Planes") ? (
-              <Button size="md" variant="secondary" icon={<Edit2 size={14} />} onClick={() => router.push(`/planes/${plan.id}/editar`)}>
+              <Button size="md" variant="secondary" icon={<IconEdit size={14} />} onClick={() => router.push(`/planes/${plan.id}/editar`)}>
                 Editar
               </Button>
             ) : undefined
@@ -60,7 +60,7 @@ export default function PlanDetallePage({ params }: { params: Promise<{ id: stri
           {/* Info general */}
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
             <h3 className="text-sm font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-              <Package size={16} className="text-neutral-400" />
+              <IconPackage size={16} className="text-neutral-400" />
               Información del plan
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
@@ -82,7 +82,7 @@ export default function PlanDetallePage({ params }: { params: Promise<{ id: stri
           {/* Módulos incluidos */}
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
             <h3 className="text-sm font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-              <Package size={16} className="text-neutral-400" />
+              <IconPackage size={16} className="text-neutral-400" />
               Módulos incluidos
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -100,7 +100,7 @@ export default function PlanDetallePage({ params }: { params: Promise<{ id: stri
           {/* Límites y uso */}
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
             <h3 className="text-sm font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-              <BarChart3 size={16} className="text-neutral-400" />
+              <IconChartBar size={16} className="text-neutral-400" />
               Límites del plan
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -114,7 +114,7 @@ export default function PlanDetallePage({ params }: { params: Promise<{ id: stri
               </div>
               <div className="rounded-lg border border-neutral-100 bg-neutral-50 p-4 text-center">
                 <div className="flex items-center justify-center gap-1.5">
-                  <Building2 size={16} className="text-neutral-400" />
+                  <IconBuilding size={16} className="text-neutral-400" />
                   <p className="text-2xl font-bold text-neutral-900 tabular-nums">{plan.tenantsActivos}</p>
                 </div>
                 <p className="text-xs text-neutral-500 mt-1">Tenants usando este plan</p>

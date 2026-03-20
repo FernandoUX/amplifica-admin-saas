@@ -1,5 +1,5 @@
 import { SelectHTMLAttributes, forwardRef } from "react";
-import { ChevronDown } from "lucide-react";
+import { IconChevronDown } from "@tabler/icons-react";
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
@@ -22,7 +22,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
         <div className="relative">
           <select
             ref={ref}
-            className={`h-9 w-full appearance-none rounded-lg border px-3 pr-8 text-sm text-neutral-900 outline-none transition-colors focus:border-primary-400 focus:ring-2 focus:ring-primary-100 ${
+            className={`h-[44px] w-full appearance-none rounded-lg border px-3 pr-8 text-base md:text-sm text-neutral-900 outline-none transition-colors focus:border-primary-500 focus:ring-2 focus:ring-primary-100 ${
               error ? "border-red-400" : "border-neutral-300"
             } ${!props.value ? "text-neutral-400" : ""} ${className}`}
             {...props}
@@ -34,7 +34,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               </option>
             ))}
           </select>
-          <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+          <IconChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
         </div>
         {error && <p className="text-xs text-red-600">{error}</p>}
       </div>

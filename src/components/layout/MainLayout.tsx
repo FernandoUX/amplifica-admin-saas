@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Menu, ChevronDown, Check } from "lucide-react";
+import { IconMenu2, IconChevronDown, IconCheck } from "@tabler/icons-react";
 import Sidebar from "./Sidebar";
 import { useRole, ROLES } from "@/lib/role-context";
 
@@ -26,7 +26,7 @@ export default function MainLayout({ children, narrow = false }: MainLayoutProps
   }, [roleOpen]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-white">
+    <div className="flex min-h-dvh md:h-dvh md:overflow-hidden" style={{ background: "var(--background)" }}>
       {/* Desktop sidebar */}
       <div className="hidden md:flex">
         <Sidebar />
@@ -36,7 +36,7 @@ export default function MainLayout({ children, narrow = false }: MainLayoutProps
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
-          <div className="absolute left-0 top-0 bottom-0 w-52">
+          <div className="absolute left-0 top-0 bottom-0 w-full max-w-[80%]">
             <Sidebar onClose={() => setSidebarOpen(false)} />
           </div>
         </div>
@@ -45,12 +45,12 @@ export default function MainLayout({ children, narrow = false }: MainLayoutProps
       {/* Main content + mobile header */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Mobile header */}
-        <header className="relative flex h-14 flex-shrink-0 items-center justify-between border-b border-neutral-800 px-4 md:hidden" style={{ backgroundColor: "#1d1d1f" }}>
+        <header className="sticky top-0 z-40 relative flex h-14 flex-shrink-0 items-center justify-between border-b border-neutral-800 px-4 md:hidden" style={{ backgroundColor: "#1d1d1f" }}>
           <button
             onClick={() => setSidebarOpen(true)}
             className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-300 hover:bg-white/10 transition-colors"
           >
-            <Menu size={20} />
+            <IconMenu2 size={20} strokeWidth={1.75} />
           </button>
 
           {/* Centered logo */}
@@ -59,8 +59,8 @@ export default function MainLayout({ children, narrow = false }: MainLayoutProps
               src="/logo-amplifica.svg"
               alt="Amplifica"
               width={100}
-              height={23}
-              className="h-[23px] w-auto"
+              height={30}
+              className="h-[30px] w-auto"
             />
           </div>
 
@@ -72,15 +72,16 @@ export default function MainLayout({ children, narrow = false }: MainLayoutProps
             >
               {/* Avatar with badge overlapping bottom */}
               <div className="relative pb-2.5">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-700 text-[10px] font-semibold text-neutral-200">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-700 text-[10px] font-semibold text-neutral-200 -mb-1">
                   {rol.iniciales}
                 </div>
                 <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap rounded bg-primary-400 px-1 py-0.5 text-[9px] font-semibold text-white leading-none">
                   {rol.nombre}
                 </span>
               </div>
-              <ChevronDown
+              <IconChevronDown
                 size={13}
+                strokeWidth={2}
                 className={`text-neutral-500 transition-transform ${roleOpen ? "rotate-180" : ""}`}
               />
             </button>
@@ -106,7 +107,7 @@ export default function MainLayout({ children, narrow = false }: MainLayoutProps
                       {r.iniciales}
                     </div>
                     <span className="flex-1 truncate">{r.nombre}</span>
-                    {r.id === rol.id && <Check size={13} className="text-primary-500" />}
+                    {r.id === rol.id && <IconCheck size={13} strokeWidth={2.5} className="text-primary-500" />}
                   </button>
                 ))}
               </div>
@@ -116,7 +117,7 @@ export default function MainLayout({ children, narrow = false }: MainLayoutProps
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto scroll-minimal pb-20 md:pb-0">
-          <div className={`mx-auto ${narrow ? "max-w-5xl" : "max-w-[1440px]"}`}>
+          <div className="mx-auto max-w-[1360px]">
             {children}
           </div>
         </main>

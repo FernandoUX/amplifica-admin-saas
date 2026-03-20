@@ -7,17 +7,58 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
 import { MOCK_EMPRESAS, MOCK_TENANTS, MOCK_CONTRATOS, MOCK_PLANES } from "@/lib/mock-data";
-import { Download, BarChart3, TrendingUp, Package, Building2, AlertTriangle } from "lucide-react";
+import { IconDownload as Download, IconChartBar as BarChart3, IconTrendingUp as TrendingUp, IconPackage as Package, IconBuilding as Building2, IconAlertTriangle as AlertTriangle } from "@tabler/icons-react";
 
 /* ── Mock usage data per tenant per cycle ── */
-const MOCK_USAGE: Record<string, { pedidos: number; sucursalesActivas: number; diasActivos: number }> = {
-  "0021": { pedidos: 1350, sucursalesActivas: 5, diasActivos: 28 },
-  "0022": { pedidos: 420, sucursalesActivas: 3, diasActivos: 28 },
-  "0023": { pedidos: 980, sucursalesActivas: 4, diasActivos: 28 },
-  "0024": { pedidos: 210, sucursalesActivas: 2, diasActivos: 28 },
-  "0025": { pedidos: 2100, sucursalesActivas: 8, diasActivos: 28 },
-  "0026": { pedidos: 45, sucursalesActivas: 1, diasActivos: 15 },
-  "0027": { pedidos: 12, sucursalesActivas: 1, diasActivos: 10 },
+const MOCK_USAGE: Record<string, Record<string, { pedidos: number; sucursalesActivas: number; diasActivos: number }>> = {
+  // February 2026 (current cycle)
+  "2026-02": {
+    "T001": { pedidos: 1350, sucursalesActivas: 5, diasActivos: 28 },
+    "T003": { pedidos: 2100, sucursalesActivas: 8, diasActivos: 28 },
+    "T004": { pedidos: 420, sucursalesActivas: 3, diasActivos: 28 },
+    "T005": { pedidos: 280, sucursalesActivas: 4, diasActivos: 28 },
+    "T006": { pedidos: 210, sucursalesActivas: 2, diasActivos: 28 },
+    "T007": { pedidos: 95, sucursalesActivas: 2, diasActivos: 28 },
+    "T008": { pedidos: 980, sucursalesActivas: 6, diasActivos: 28 },
+    "T010": { pedidos: 115, sucursalesActivas: 1, diasActivos: 28 },
+    "T011": { pedidos: 1850, sucursalesActivas: 12, diasActivos: 28 },
+    "T012": { pedidos: 310, sucursalesActivas: 3, diasActivos: 28 },
+    "T014": { pedidos: 88, sucursalesActivas: 1, diasActivos: 28 },
+    "T015": { pedidos: 245, sucursalesActivas: 3, diasActivos: 28 },
+    "T017": { pedidos: 72, sucursalesActivas: 1, diasActivos: 28 },
+    "T018": { pedidos: 45, sucursalesActivas: 1, diasActivos: 24 },
+    "T019": { pedidos: 38, sucursalesActivas: 1, diasActivos: 22 },
+    "T020": { pedidos: 190, sucursalesActivas: 2, diasActivos: 20 },
+    "T021": { pedidos: 55, sucursalesActivas: 1, diasActivos: 18 },
+    "T022": { pedidos: 175, sucursalesActivas: 2, diasActivos: 16 },
+  },
+  // January 2026
+  "2026-01": {
+    "T001": { pedidos: 1280, sucursalesActivas: 5, diasActivos: 31 },
+    "T003": { pedidos: 1950, sucursalesActivas: 7, diasActivos: 31 },
+    "T004": { pedidos: 390, sucursalesActivas: 3, diasActivos: 31 },
+    "T005": { pedidos: 310, sucursalesActivas: 4, diasActivos: 31 },
+    "T006": { pedidos: 195, sucursalesActivas: 2, diasActivos: 31 },
+    "T007": { pedidos: 105, sucursalesActivas: 2, diasActivos: 31 },
+    "T008": { pedidos: 920, sucursalesActivas: 5, diasActivos: 31 },
+    "T010": { pedidos: 98, sucursalesActivas: 1, diasActivos: 31 },
+    "T011": { pedidos: 1780, sucursalesActivas: 11, diasActivos: 31 },
+    "T012": { pedidos: 285, sucursalesActivas: 3, diasActivos: 31 },
+    "T014": { pedidos: 75, sucursalesActivas: 1, diasActivos: 31 },
+    "T015": { pedidos: 230, sucursalesActivas: 3, diasActivos: 31 },
+    "T017": { pedidos: 65, sucursalesActivas: 1, diasActivos: 31 },
+  },
+  // December 2025
+  "2025-12": {
+    "T001": { pedidos: 1420, sucursalesActivas: 5, diasActivos: 31 },
+    "T003": { pedidos: 2250, sucursalesActivas: 8, diasActivos: 31 },
+    "T004": { pedidos: 450, sucursalesActivas: 3, diasActivos: 31 },
+    "T005": { pedidos: 340, sucursalesActivas: 4, diasActivos: 31 },
+    "T006": { pedidos: 185, sucursalesActivas: 2, diasActivos: 16 },
+    "T008": { pedidos: 870, sucursalesActivas: 5, diasActivos: 31 },
+    "T011": { pedidos: 1650, sucursalesActivas: 10, diasActivos: 27 },
+    "T012": { pedidos: 260, sucursalesActivas: 2, diasActivos: 27 },
+  },
 };
 
 function StatCard({ label, value, sub, icon, variant }: { label: string; value: string; sub?: string; icon: React.ReactNode; variant?: "success" | "warning" | "danger" | "default" }) {
@@ -35,9 +76,9 @@ function StatCard({ label, value, sub, icon, variant }: { label: string; value: 
   };
   return (
     <div className={`rounded-xl border p-4 ${colors[variant ?? "default"]}`}>
-      <div className="flex items-center gap-2 mb-2">
-        <span className={iconColors[variant ?? "default"]}>{icon}</span>
+      <div className="flex items-center justify-between gap-2 mb-2">
         <span className="text-xs font-semibold text-neutral-500">{label}</span>
+        <span className={iconColors[variant ?? "default"]}>{icon}</span>
       </div>
       <p className="text-2xl font-bold text-neutral-900">{value}</p>
       {sub && <p className="text-xs text-neutral-500 mt-1">{sub}</p>}
@@ -66,7 +107,7 @@ export default function ReportesPage() {
     : null;
   const plan = contrato?.planId ? MOCK_PLANES.find((p) => p.id === contrato.planId) : null;
   const isTrial = contrato?.billingMode === "trial";
-  const usage = MOCK_USAGE[tenantId] ?? null;
+  const usage = MOCK_USAGE[periodo]?.[tenantId] ?? null;
 
   // Effective limits (plan with overrides)
   const limitePedidos = contrato?.overridePedidosMes ?? plan?.pedidosMax ?? 0;
@@ -94,14 +135,16 @@ export default function ReportesPage() {
 
   const handleExportCSV = () => {
     if (!selectedTenant || !contrato || !usage) return;
+    const periodoInicio = `${periodo}-05`;
+    const periodoFin = periodo === "2026-02" ? "2026-03-04" : periodo === "2026-01" ? "2026-02-04" : "2026-01-04";
     const headers = ["Cliente", "Tenant", "N° Contrato", "billing_mode", "Período inicio", "Período fin", "Plan", "Límite pedidos", "Pedidos totales", "Excedente pedidos", "Precio unitario pedido adicional", "Total variable pedidos", "Límite sucursales", "Sucursales activas", "Monto base mensual", "Total estimado", "Moneda", "Días activos en el período", "Prorrateo aplicado"];
     const row = [
       selectedEmpresa?.nombreFantasia ?? "",
       selectedTenant.nombre,
       contrato.displayId,
       contrato.billingMode,
-      "2026-02-05",
-      "2026-03-04",
+      periodoInicio,
+      periodoFin,
       plan?.nombre ?? "Trial",
       limitePedidos,
       pedidosTotales,
@@ -121,7 +164,7 @@ export default function ReportesPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `reporte_uso_${selectedTenant.nombre.replace(/\s+/g, "_")}_2026-02-05_2026-03-04.csv`;
+    a.download = `reporte_uso_${selectedTenant.nombre.replace(/\s+/g, "_")}_${periodoInicio}_${periodoFin}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -184,10 +227,10 @@ export default function ReportesPage() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-lg font-bold text-neutral-900">{selectedTenant?.nombre}</h2>
                   {selectedEmpresa && <span className="text-sm text-neutral-400">({selectedEmpresa.nombreFantasia})</span>}
-                  {contrato && <Badge variant={isTrial ? "pending" : "active"}>{isTrial ? "Trial" : "Pagado"}</Badge>}
+                  {contrato && <Badge variant={isTrial ? "trial" : "active"}>{isTrial ? "Trial" : "Pagado"}</Badge>}
                   {contrato && <span className="text-xs text-neutral-400 font-mono">{contrato.displayId}</span>}
                   {isTrial && (
-                    <Badge variant="pending">Trial — sin cobro de excedente</Badge>
+                    <Badge variant="trial">Trial — sin cobro de excedente</Badge>
                   )}
                 </div>
                 {contrato && usage && (

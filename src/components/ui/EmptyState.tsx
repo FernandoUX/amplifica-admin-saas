@@ -1,5 +1,5 @@
 import Button from "./Button";
-import { Plus } from "lucide-react";
+import { IconPlus } from "@tabler/icons-react";
 
 interface EmptyStateProps {
   icon: React.ReactNode;
@@ -21,7 +21,7 @@ export default function EmptyState({
       </div>
       <p className="text-sm font-medium text-neutral-500">{title}</p>
       {onCreateClick && (
-        <Button variant="secondary" size="md" onClick={onCreateClick} icon={<Plus size={14} />}>
+        <Button variant="secondary" size="md" onClick={onCreateClick} icon={<IconPlus size={14} />}>
           {createLabel}
         </Button>
       )}

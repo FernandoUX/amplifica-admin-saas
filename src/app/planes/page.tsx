@@ -14,7 +14,8 @@ import AlertModal from "@/components/ui/AlertModal";
 import { MOCK_PLANES, MOCK_TRIAL_CONFIGS } from "@/lib/mock-data";
 import { Plan, TrialConfig } from "@/lib/types";
 import { useRole } from "@/lib/role-context";
-import { Layers, Plus, Search, ChevronUp, ChevronDown, Star } from "lucide-react";
+import { IconStack, IconPlus, IconSearch, IconChevronUp, IconChevronDown, IconStar, IconToggleRight, IconSettings } from "@tabler/icons-react";
+import SummaryCard from "@/components/ui/SummaryCard";
 
 /* ── Helpers ── */
 const MAX_TAGS = 3;
@@ -24,10 +25,10 @@ type PlanSortCol = "nombre" | "pedidosMax" | "sucursalesMax" | "tenantsActivos" 
 type TrialSortCol = "nombre" | "duracionDias" | "pedidosMax" | "sucursalesMax" | "tenantsActivos" | "estado" | null;
 
 function SortIcon({ active, dir }: { active: boolean; dir: "asc" | "desc" }) {
-  if (!active) return <ChevronUp size={11} className="text-neutral-300 ml-0.5" />;
+  if (!active) return <IconChevronUp size={11} className="text-neutral-600 ml-0.5" />;
   return dir === "asc"
-    ? <ChevronUp size={11} className="text-primary-500 ml-0.5" />
-    : <ChevronDown size={11} className="text-primary-500 ml-0.5" />;
+    ? <IconChevronUp size={11} className="text-primary-500 ml-0.5" />
+    : <IconChevronDown size={11} className="text-primary-500 ml-0.5" />;
 }
 
 function ModuleTags({ modulos }: { modulos: string[] }) {
@@ -99,33 +100,83 @@ function PlanesTab() {
     setAlertPlan(null);
   };
 
-  const thBase = "px-4 py-2.5 text-left text-xs font-semibold text-neutral-500";
+  const thBase = "px-4 py-2.5 text-left text-sm font-semibold text-neutral-600";
   const thSort = `${thBase} cursor-pointer hover:text-neutral-700 hover:bg-neutral-100 transition-colors`;
 
   return (
     <>
       {/* Search + Create */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <div className="relative w-full sm:w-auto">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+          <IconSearch size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
           <input
-            className="h-9 w-full sm:min-w-[280px] rounded-lg border border-neutral-300 pl-8 pr-3 text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
+            className="h-[44px] w-full rounded-lg bg-neutral-100 pl-8 pr-3 text-base md:text-sm text-neutral-800 placeholder:text-neutral-500 outline-none focus:bg-white focus:ring-2 focus:ring-primary-100"
             placeholder="Buscar por nombre de plan"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
         </div>
         {canCrear("Planes") && (
-          <Button size="md" icon={<Plus size={14} />} onClick={() => router.push("/planes/crear")}>
+          <Button size="md" icon={<IconPlus size={14} />} onClick={() => router.push("/planes/crear")}>
             Crear plan
           </Button>
         )}
       </div>
 
       {filtered.length === 0 && !search ? (
-        <EmptyState icon={<Layers size={24} />} title="No hay planes registrados" onCreateClick={() => router.push("/planes/crear")} />
+        <EmptyState icon={<IconStack size={24} />} title="No hay planes registrados" onCreateClick={() => router.push("/planes/crear")} />
       ) : (
-        <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
+        <>
+        {/* Mobile cards */}
+        <div className="md:hidden flex flex-col gap-3">
+          {paginated.map((plan) => (
+            <div key={plan.id} className="rounded-xl border border-neutral-200 bg-white p-4 space-y-2.5">
+              <div className="flex items-start justify-between gap-2">
+                <button
+                  onClick={() => router.push(`/planes/${plan.id}`)}
+                  className="table-link text-sm font-semibold text-neutral-900 underline decoration-neutral-300 hover:decoration-neutral-500 transition-colors text-left"
+                >
+                  {plan.nombre}
+                </button>
+                <div className="flex items-center gap-1.5">
+                  <Badge variant={statusVariant(plan.estado) as never}>{plan.estado}</Badge>
+                  <RowMenu actions={[
+                    { label: "Ver detalle", onClick: () => router.push(`/planes/${plan.id}`) },
+                    ...(canEditar("Planes") ? [{ label: "Editar", onClick: () => router.push(`/planes/${plan.id}/editar`) }] : []),
+                    ...(canDeshabilitar("Planes")
+                      ? [{
+                          label: plan.estado === "Activo" ? "Desactivar" : "Reactivar",
+                          onClick: () => handleDesactivar(plan),
+                          variant: (plan.estado === "Activo" ? "danger" : "default") as "danger" | "default",
+                        }]
+                      : []),
+                  ]} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+                <div className="col-span-2">
+                  <span className="text-neutral-500 text-xs">Módulos</span>
+                  <div className="mt-0.5"><ModuleTags modulos={plan.modulos} /></div>
+                </div>
+                <div>
+                  <span className="text-neutral-500 text-xs">Pedidos máx.</span>
+                  <p className="text-neutral-700 tabular-nums">{plan.pedidosMax.toLocaleString("es-CL")}</p>
+                </div>
+                <div>
+                  <span className="text-neutral-500 text-xs">Sucursales máx.</span>
+                  <p className="text-neutral-700 tabular-nums">{plan.sucursalesMax}</p>
+                </div>
+                <div>
+                  <span className="text-neutral-500 text-xs">Tenants suscritos</span>
+                  <p className="text-neutral-700 tabular-nums">{plan.tenantsActivos}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block rounded-xl border border-neutral-200 bg-white overflow-hidden">
           <div className="table-scroll">
             <table className="w-full min-w-[800px]">
               <thead className="sticky top-0 z-10">
@@ -146,7 +197,7 @@ function PlanesTab() {
                   <th className={thSort} onClick={() => toggleSort("estado")}>
                     <span className="inline-flex items-center">Estado <SortIcon active={sortCol === "estado"} dir={sortDir} /></span>
                   </th>
-                  <th className="w-10 py-2.5"></th>
+                  <th className="w-10 py-2.5 sticky right-0 bg-neutral-50"></th>
                 </tr>
               </thead>
               <tbody>
@@ -155,7 +206,7 @@ function PlanesTab() {
                     <td className="px-4 py-3">
                       <button
                         onClick={() => router.push(`/planes/${plan.id}`)}
-                        className="text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline text-left"
+                        className="table-link text-sm font-semibold text-neutral-900 underline decoration-neutral-300 hover:decoration-neutral-500 transition-colors text-left"
                       >
                         {plan.nombre}
                       </button>
@@ -163,19 +214,19 @@ function PlanesTab() {
                     <td className="px-4 py-3">
                       <ModuleTags modulos={plan.modulos} />
                     </td>
-                    <td className="px-4 py-3 text-sm text-neutral-700 tabular-nums">
+                    <td className="px-4 py-3 text-sm font-medium text-neutral-700 tabular-nums">
                       {plan.pedidosMax.toLocaleString("es-CL")}
                     </td>
-                    <td className="px-4 py-3 text-sm text-neutral-700 tabular-nums">
+                    <td className="px-4 py-3 text-sm font-medium text-neutral-700 tabular-nums">
                       {plan.sucursalesMax}
                     </td>
-                    <td className="px-4 py-3 text-sm text-neutral-700 tabular-nums">
+                    <td className="px-4 py-3 text-sm font-medium text-neutral-700 tabular-nums">
                       {plan.tenantsActivos}
                     </td>
                     <td className="px-4 py-3">
                       <Badge variant={statusVariant(plan.estado) as never}>{plan.estado}</Badge>
                     </td>
-                    <td className="w-10 py-3 pr-3">
+                    <td className="w-10 py-3 pr-3 sticky right-0 bg-white">
                       <RowMenu actions={[
                         { label: "Ver detalle", onClick: () => router.push(`/planes/${plan.id}`) },
                         ...(canEditar("Planes") ? [{ label: "Editar", onClick: () => router.push(`/planes/${plan.id}/editar`) }] : []),
@@ -195,6 +246,11 @@ function PlanesTab() {
           </div>
           <Pagination page={page} total={filtered.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
         </div>
+
+        <div className="md:hidden">
+          <Pagination page={page} total={filtered.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
+        </div>
+        </>
       )}
 
       <AlertModal
@@ -262,32 +318,98 @@ function TrialConfigsTab() {
     setAlertConfig(null);
   };
 
-  const thBase = "px-4 py-2.5 text-left text-xs font-semibold text-neutral-500";
+  const thBase = "px-4 py-2.5 text-left text-sm font-semibold text-neutral-600";
   const thSort = `${thBase} cursor-pointer hover:text-neutral-700 hover:bg-neutral-100 transition-colors`;
+
+  const configsActivas = configs.filter((c) => c.estado === "Activo").length;
+  const configDefault = configs.find((c) => c.esDefault)?.nombre ?? "—";
+  const totalConfigs = configs.length;
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+        <SummaryCard title="Configs activas" value={configsActivas} sub="activas" subColor="green" icon={<IconToggleRight size={16} />} />
+        <SummaryCard title="Config por defecto" value={<span className="truncate block">{configDefault}</span>} icon={<IconStar size={16} />} />
+        <SummaryCard title="Total configs" value={totalConfigs} sub="configuraciones" subColor="neutral" icon={<IconSettings size={16} />} />
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <div className="relative w-full sm:w-auto">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+          <IconSearch size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
           <input
-            className="h-9 w-full sm:min-w-[280px] rounded-lg border border-neutral-300 pl-8 pr-3 text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
+            className="h-[44px] w-full rounded-lg bg-neutral-100 pl-8 pr-3 text-base md:text-sm text-neutral-800 placeholder:text-neutral-500 outline-none focus:bg-white focus:ring-2 focus:ring-primary-100"
             placeholder="Buscar configuración de trial"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
         </div>
         {canCrear("Planes") && (
-          <Button size="md" icon={<Plus size={14} />} onClick={() => router.push("/planes/trial/crear")}>
+          <Button size="md" icon={<IconPlus size={14} />} onClick={() => router.push("/planes/trial/crear")}>
             Crear configuración
           </Button>
         )}
       </div>
 
       {filtered.length === 0 && !search ? (
-        <EmptyState icon={<Layers size={24} />} title="No hay configuraciones de trial" onCreateClick={() => router.push("/planes/trial/crear")} />
+        <EmptyState icon={<IconStack size={24} />} title="No hay configuraciones de trial" onCreateClick={() => router.push("/planes/trial/crear")} />
       ) : (
-        <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
+        <>
+        {/* Mobile cards */}
+        <div className="md:hidden flex flex-col gap-3">
+          {paginated.map((config) => (
+            <div key={config.id} className="rounded-xl border border-neutral-200 bg-white p-4 space-y-2.5">
+              <div className="flex items-start justify-between gap-2">
+                <button
+                  onClick={() => router.push(`/planes/trial/${config.id}`)}
+                  className="table-link text-sm font-semibold text-neutral-900 underline decoration-neutral-300 hover:decoration-neutral-500 transition-colors text-left"
+                >
+                  {config.nombre}
+                </button>
+                <div className="flex items-center gap-1.5">
+                  {config.esDefault && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                      <IconStar size={10} className="fill-amber-400 text-amber-400" /> Default
+                    </span>
+                  )}
+                  <Badge variant={statusVariant(config.estado) as never}>{config.estado}</Badge>
+                  <RowMenu actions={[
+                    { label: "Ver detalle", onClick: () => router.push(`/planes/trial/${config.id}`) },
+                    ...(canEditar("Planes") ? [{ label: "Editar", onClick: () => router.push(`/planes/trial/${config.id}/editar`) }] : []),
+                    ...(canDeshabilitar("Planes")
+                      ? [{
+                          label: config.estado === "Activo" ? "Desactivar" : "Reactivar",
+                          onClick: () => handleDesactivar(config),
+                          variant: (config.estado === "Activo" ? "danger" : "default") as "danger" | "default",
+                        }]
+                      : []),
+                  ]} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+                <div>
+                  <span className="text-neutral-500 text-xs">Duración</span>
+                  <p className="text-neutral-700 tabular-nums">{config.duracionDias} días</p>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-neutral-500 text-xs">Módulos</span>
+                  <div className="mt-0.5"><ModuleTags modulos={config.modulos} /></div>
+                </div>
+                <div>
+                  <span className="text-neutral-500 text-xs">Pedidos máx.</span>
+                  <p className="text-neutral-700 tabular-nums">{config.pedidosMax.toLocaleString("es-CL")}</p>
+                </div>
+                <div>
+                  <span className="text-neutral-500 text-xs">Sucursales máx.</span>
+                  <p className="text-neutral-700 tabular-nums">{config.sucursalesMax}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block rounded-xl border border-neutral-200 bg-white overflow-hidden">
           <div className="table-scroll">
             <table className="w-full min-w-[900px]">
               <thead className="sticky top-0 z-10">
@@ -312,7 +434,7 @@ function TrialConfigsTab() {
                   <th className={thSort} onClick={() => toggleSort("estado")}>
                     <span className="inline-flex items-center">Estado <SortIcon active={sortCol === "estado"} dir={sortDir} /></span>
                   </th>
-                  <th className="w-10 py-2.5"></th>
+                  <th className="w-10 py-2.5 sticky right-0 bg-neutral-50"></th>
                 </tr>
               </thead>
               <tbody>
@@ -321,25 +443,25 @@ function TrialConfigsTab() {
                     <td className="px-4 py-3">
                       <button
                         onClick={() => router.push(`/planes/trial/${config.id}`)}
-                        className="text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline text-left"
+                        className="table-link text-sm font-semibold text-neutral-900 underline decoration-neutral-300 hover:decoration-neutral-500 transition-colors text-left"
                       >
                         {config.nombre}
                       </button>
                     </td>
-                    <td className="px-4 py-3 text-sm text-neutral-700 tabular-nums">{config.duracionDias}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-neutral-700 tabular-nums">{config.duracionDias}</td>
                     <td className="px-4 py-3"><ModuleTags modulos={config.modulos} /></td>
-                    <td className="px-4 py-3 text-sm text-neutral-700 tabular-nums">{config.pedidosMax.toLocaleString("es-CL")}</td>
-                    <td className="px-4 py-3 text-sm text-neutral-700 tabular-nums">{config.sucursalesMax}</td>
-                    <td className="px-4 py-3 text-sm text-neutral-700 tabular-nums">{config.tenantsActivos}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-neutral-700 tabular-nums">{config.pedidosMax.toLocaleString("es-CL")}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-neutral-700 tabular-nums">{config.sucursalesMax}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-neutral-700 tabular-nums">{config.tenantsActivos}</td>
                     <td className="px-4 py-3">
                       {config.esDefault
-                        ? <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-semibold text-amber-700"><Star size={10} className="fill-amber-400 text-amber-400" /> Default</span>
+                        ? <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-semibold text-amber-700"><IconStar size={10} className="fill-amber-400 text-amber-400" /> Default</span>
                         : <span className="text-xs text-neutral-400">—</span>}
                     </td>
                     <td className="px-4 py-3">
                       <Badge variant={statusVariant(config.estado) as never}>{config.estado}</Badge>
                     </td>
-                    <td className="w-10 py-3 pr-3">
+                    <td className="w-10 py-3 pr-3 sticky right-0 bg-white">
                       <RowMenu actions={[
                         { label: "Ver detalle", onClick: () => router.push(`/planes/trial/${config.id}`) },
                         ...(canEditar("Planes") ? [{ label: "Editar", onClick: () => router.push(`/planes/trial/${config.id}/editar`) }] : []),
@@ -359,6 +481,11 @@ function TrialConfigsTab() {
           </div>
           <Pagination page={page} total={filtered.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
         </div>
+
+        <div className="md:hidden">
+          <Pagination page={page} total={filtered.length} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
+        </div>
+        </>
       )}
 
       <AlertModal

@@ -1,0 +1,75 @@
+[     413ms] [ERROR] In HTML, %s cannot be a descendant of <%s>.
+This will cause a hydration error.%s <button> button 
+
+  ...
+    <main className="flex-1 ove...">
+      <div className="max-w-4xl ...">
+        <div>
+        <ColorsSection>
+        <TypographySection>
+        <SpacingSection>
+        <TokensSection>
+        <IconsSection>
+        <ButtonsSection>
+        <InputsSection>
+        <BadgesSection>
+        <ToggleSection>
+        <FormFieldsSection>
+          <DSSection id="form-fields" title="Campos de ..." description="Composició...">
+            <section id="form-fields" className="scroll-mt-...">
+              <div>
+              <DSSubsection title="Formulario...">
+                <div className="mb-8">
+                  <h3>
+                  <DSShowcase label="Patrón de ...">
+                    <div className="mb-4">
+                      <p>
+                      <div className={"rounded-..."}>
+                        <div className="max-w-2xl ...">
+                          <div>
+                          <div>
+                          <MultiSelect label="Módulos" required={true} placeholder="Selecciona..." options={[...]} ...>
+                            <div className="flex flex-..." ref={{current:null}}>
+                              <label>
+                              <div className="relative">
+>                               <button
+>                                 type="button"
+>                                 onClick={function onClick}
+>                                 className="flex min-h-[36px] w-full items-center gap-1 rounded-lg border px-2.5 py-1..."
+>                               >
+                                  <div className="flex flex-...">
+                                    <span className="inline-fle...">
+>                                     <button
+>                                       type="button"
+>                                       onClick={function onClick}
+>                                       className="text-primary-400 hover:text-primary-700 transition-colors"
+>                                     >
+                                    ...
+                                  ...
+              ...
+        ...
+ @ http://localhost:3020/_next/static/chunks/node_modules_next_dist_f3530cac._.js:3127
+[     414ms] [ERROR] <%s> cannot contain a nested %s.
+See this log for the ancestor stack trace. button <button> @ http://localhost:3020/_next/static/chunks/node_modules_next_dist_f3530cac._.js:3127
+[     530ms] Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+    at throwOnHydrationMismatch (http://localhost:3020/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:3348:56)
+    at beginWork (http://localhost:3020/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:6775:918)
+    at runWithFiberInDEV (http://localhost:3020/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:965:74)
+    at performUnitOfWork (http://localhost:3020/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:9562:97)
+    at workLoopSync (http://localhost:3020/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:9456:40)
+    at renderRootSync (http://localhost:3020/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:9440:13)
+    at performWorkOnRoot (http://localhost:3020/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:9068:186)
+    at performSyncWorkOnRoot (http://localhost:3020/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:10238:9)
+    at flushSyncWorkAcrossRoots_impl (http://localhost:3020/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:10154:316)
+    at dispatchEvent (http://localhost:3020/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:12954:174)
+    at dispatchDiscreteEvent (http://localhost:3020/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:12917:64)

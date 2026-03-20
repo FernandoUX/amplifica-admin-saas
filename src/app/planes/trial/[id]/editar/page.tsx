@@ -101,7 +101,7 @@ export default function EditarTrialConfigPage({ params }: { params: Promise<{ id
           description="Modifica la configuración de trial"
         />
 
-        <div className="flex-1 px-4 sm:px-6 pb-6">
+        <div className="flex-1 px-4 sm:px-6 pb-20 md:pb-6">
           <div className="rounded-xl border border-neutral-200 bg-white p-6 space-y-5">
             <Input
               label="Nombre de la configuración"
@@ -178,11 +178,11 @@ export default function EditarTrialConfigPage({ params }: { params: Promise<{ id
               <Toggle checked={form.esDefault} onChange={(v) => setForm({ ...form, esDefault: v })} />
             </div>
 
-            <div className="flex gap-3 pt-3">
-              <Button variant="secondary" className="flex-1" onClick={handleCancel}>
+            <div className="fixed bottom-0 inset-x-0 bg-white border-t border-neutral-200 px-4 py-3 flex gap-3 md:relative md:inset-auto md:border-0 md:bg-transparent md:px-0 md:py-0 md:pt-3 z-20">
+              <Button variant="secondary" className="flex-1 md:flex-initial" onClick={handleCancel}>
                 Cancelar
               </Button>
-              <Button className="flex-1" onClick={handleSubmit}>
+              <Button className="flex-1 md:flex-initial" onClick={handleSubmit}>
                 Guardar cambios
               </Button>
             </div>

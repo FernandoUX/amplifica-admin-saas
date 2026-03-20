@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, X, Check } from "lucide-react";
+import { IconChevronDown, IconX, IconCheck } from "@tabler/icons-react";
 
 interface MultiSelectProps {
   label?: string;
@@ -75,13 +75,13 @@ export default function MultiSelect({
                     }}
                     className="text-primary-400 hover:text-primary-700 transition-colors"
                   >
-                    <X size={10} />
+                    <IconX size={10} />
                   </button>
                 </span>
               ))
             )}
           </div>
-          <ChevronDown
+          <IconChevronDown
             size={14}
             className={`shrink-0 text-neutral-400 transition-transform ${open ? "rotate-180" : ""}`}
           />
@@ -107,7 +107,7 @@ export default function MultiSelect({
                         : "border-neutral-300"
                     }`}
                   >
-                    {selected && <Check size={10} />}
+                    {selected && <IconCheck size={10} />}
                   </span>
                   {opt}
                 </button>

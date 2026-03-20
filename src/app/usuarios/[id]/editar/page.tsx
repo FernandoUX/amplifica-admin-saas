@@ -122,7 +122,7 @@ export default function EditarUsuarioPage({ params }: { params: Promise<{ id: st
           description="Modifica los datos del usuario"
         />
 
-        <div className="flex-1 px-4 sm:px-6 pb-6">
+        <div className="flex-1 px-4 sm:px-6 pb-20 md:pb-6">
           <div className="rounded-xl border border-neutral-200 bg-white p-6 space-y-5">
 
             {/* Locked fields */}
@@ -184,7 +184,7 @@ export default function EditarUsuarioPage({ params }: { params: Promise<{ id: st
             />
 
             {usuario.tipo === "Usuario Tenant" && (
-              <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+              <div className="rounded-lg bg-blue-50 px-4 py-3">
                 <p className="text-xs text-blue-700">
                   Las membresías de tenant se gestionan desde la pestaña <strong>&quot;Membresías&quot;</strong> en el detalle del usuario. No es necesario desactivar y recrear para cambiar de tenant.
                 </p>
@@ -200,11 +200,11 @@ export default function EditarUsuarioPage({ params }: { params: Promise<{ id: st
             )}
 
             {/* Actions */}
-            <div className="flex gap-3 pt-3">
-              <Button variant="secondary" className="flex-1" onClick={handleCancel}>
+            <div className="fixed bottom-0 inset-x-0 bg-white border-t border-neutral-200 px-4 py-3 flex gap-3 md:relative md:inset-auto md:border-0 md:bg-transparent md:px-0 md:py-0 md:pt-3 z-20">
+              <Button variant="secondary" className="flex-1 md:flex-initial" onClick={handleCancel}>
                 Cancelar
               </Button>
-              <Button className="flex-1" onClick={handleSubmit}>
+              <Button className="flex-1 md:flex-initial" onClick={handleSubmit}>
                 Guardar cambios
               </Button>
             </div>

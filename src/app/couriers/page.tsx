@@ -1,7 +1,7 @@
 import MainLayout from "@/components/layout/MainLayout";
 import PageHeader from "@/components/ui/PageHeader";
 import EmptyState from "@/components/ui/EmptyState";
-import { Truck } from "lucide-react";
+import { IconTruck as Truck } from "@tabler/icons-react";
 
 export default function CouriersPage() {
   return (

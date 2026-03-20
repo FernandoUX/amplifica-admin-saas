@@ -1,15 +1,17 @@
 "use client";
 
-import { Suspense, useState, useMemo } from "react";
+import { Suspense, useState, useMemo, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
 import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
-import Toast from "@/components/ui/Toast";
 import AlertModal from "@/components/ui/AlertModal";
-import { MOCK_TENANTS, MOCK_EMPRESAS, MOCK_PLANES, MOCK_TRIAL_CONFIGS, MOCK_CONTRATOS } from "@/lib/mock-data";
+import DatePicker from "@/components/ui/DatePicker";
+import { MOCK_TENANTS, MOCK_EMPRESAS, MOCK_PLANES, MOCK_TRIAL_CONFIGS, MOCK_CONTRATOS, addContrato } from "@/lib/mock-data";
+import { IconInfoCircle } from "@tabler/icons-react";
+import type { Contrato } from "@/lib/types";
 
 interface FormState {
   tenantId: string;
@@ -64,8 +66,9 @@ function CrearContratoForm() {
   const [form, setForm] = useState<FormState>(initial);
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [touched, setTouched] = useState<Set<string>>(new Set());
-  const [toast, setToast] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
+  const [sinVencimiento, setSinVencimiento] = useState(false);
 
   const isDirty = JSON.stringify(form) !== JSON.stringify(initial);
   const isPagado = form.billingMode === "pagado";
@@ -75,13 +78,48 @@ function CrearContratoForm() {
   const tenantMap = Object.fromEntries(MOCK_TENANTS.map((t) => [t.id, t]));
   const empresaMap = Object.fromEntries(MOCK_EMPRESAS.map((e) => [e.id, e]));
 
-  // Available tenants: only from active clients, no active contract
+  // All active tenants (allows override of existing contracts)
   const availableTenants = MOCK_TENANTS.filter((t) => {
     const empresa = MOCK_EMPRESAS.find((e) => e.id === t.empresaId);
     if (!empresa || empresa.operationalStatus !== "activo") return false;
-    const hasActive = MOCK_CONTRATOS.some((c) => c.tenantId === t.id && c.estado === "vigente");
-    return !hasActive;
+    return t.operationalStatus === "activo";
   });
+
+  // Tenant search combobox state
+  const [tenantQuery, setTenantQuery] = useState("");
+  const [tenantOpen, setTenantOpen] = useState(false);
+  const tenantRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (tenantRef.current && !tenantRef.current.contains(e.target as Node)) setTenantOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const tenantResults = useMemo(() => {
+    const q = tenantQuery.toLowerCase();
+    return availableTenants.filter((t) => {
+      const emp = empresaMap[t.empresaId];
+      return (
+        t.nombre.toLowerCase().includes(q) ||
+        (t.dominio ?? "").toLowerCase().includes(q) ||
+        (emp?.nombreFantasia ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [tenantQuery, availableTenants, empresaMap]);
+
+  // Check if a tenant has an active (vigente) contract
+  const vigenteTenantIds = useMemo(
+    () => new Set(MOCK_CONTRATOS.filter((c) => c.estado === "vigente").map((c) => c.tenantId)),
+    []
+  );
+
+  const selectedTenantHasContract = form.tenantId ? vigenteTenantIds.has(form.tenantId) : false;
+  const overriddenContract = selectedTenantHasContract
+    ? MOCK_CONTRATOS.find((c) => c.tenantId === form.tenantId && c.estado === "vigente")
+    : null;
 
   const selectedTenant = tenantMap[form.tenantId];
   const selectedEmpresa = selectedTenant ? empresaMap[selectedTenant.empresaId] : null;
@@ -111,8 +149,14 @@ function CrearContratoForm() {
     if (isPagado && !f.planId) e.planId = "Debes seleccionar un plan";
     if (isTrial && !f.trialConfigId) e.trialConfigId = "Debes seleccionar una configuración de trial";
     if (!f.fechaInicio) e.fechaInicio = "La fecha de inicio es obligatoria";
-    if (!f.fechaVencimiento) e.fechaVencimiento = "La fecha de vencimiento es obligatoria";
-    else if (f.fechaInicio && f.fechaVencimiento <= f.fechaInicio) e.fechaVencimiento = "Debe ser posterior a la fecha de inicio";
+    if (!sinVencimiento) {
+      if (!f.fechaVencimiento) e.fechaVencimiento = "La fecha de vencimiento es obligatoria";
+      else if (f.fechaInicio && f.fechaVencimiento <= f.fechaInicio) e.fechaVencimiento = "Debe ser posterior a la fecha de inicio";
+      else if (f.fechaInicio && f.fechaVencimiento) {
+        const diffDays = (new Date(f.fechaVencimiento).getTime() - new Date(f.fechaInicio).getTime()) / (1000 * 60 * 60 * 24);
+        if (diffDays < 15) e.fechaVencimiento = "Debe haber al menos 15 días entre inicio y vencimiento";
+      }
+    }
     if (isPagado) {
       if (!f.moneda) e.moneda = "La moneda es obligatoria";
       if (!f.montoBase) e.montoBase = "El monto base es obligatorio";
@@ -131,8 +175,32 @@ function CrearContratoForm() {
     setErrors(e);
     setTouched(new Set(Object.keys(form)));
     if (Object.keys(e).length > 0) return;
-    setToast(true);
-    setTimeout(() => router.push("/contratos"), 1200);
+    addContrato({
+      tenantId: form.tenantId,
+      billingMode: form.billingMode as "trial" | "pagado",
+      planId: isPagado ? form.planId || null : null,
+      planNombre: isPagado ? (selectedPlan?.nombre ?? null) : null,
+      trialConfigId: isTrial ? form.trialConfigId || null : null,
+      trialConfigNombre: isTrial ? (selectedTrialConfig?.nombre ?? null) : null,
+      fechaInicio: form.fechaInicio,
+      fechaVencimiento: sinVencimiento ? "" : form.fechaVencimiento,
+      trialEndDate: isTrial ? trialEndDate : null,
+      moneda: form.moneda,
+      montoBase: isPagado && form.montoBase ? Number(form.montoBase) : null,
+      precioPedidoAdicional: isPagado && form.precioPedidoAdicional ? Number(form.precioPedidoAdicional) : null,
+      tipoDescuento: (form.tipoDescuento as Contrato["tipoDescuento"]) || null,
+      valorDescuento: form.valorDescuento ? Number(form.valorDescuento) : null,
+      montoBaseFinal: montoBaseFinal,
+      overridePedidosMes: form.overridePedidosMes ? Number(form.overridePedidosMes) : null,
+      overrideSucursales: form.overrideSucursales ? Number(form.overrideSucursales) : null,
+      autoRenew: form.autoRenew,
+      notas: form.notas || null,
+      estado: "vigente",
+      closureReason: null,
+      closureDate: null,
+      closureNotes: null,
+    });
+    setShowSuccess(true);
   };
 
   const handleCancel = () => {
@@ -158,19 +226,67 @@ function CrearContratoForm() {
         />
 
         <div className="flex-1 px-4 sm:px-6 pb-6">
-          <div className="rounded-xl border border-neutral-200 bg-white p-6 space-y-5">
+          <div className="rounded-xl border border-neutral-200 bg-white p-6 space-y-5 pb-20 md:pb-6">
 
-            {/* Tenant */}
-            <Select
-              label="Tenant asociado"
-              required
-              placeholder="Selecciona un tenant disponible"
-              value={form.tenantId}
-              onChange={(e) => { set("tenantId", e.target.value); setTouched((p) => new Set([...p, "tenantId"])); }}
-              onBlur={() => handleBlur("tenantId")}
-              error={touched.has("tenantId") ? errors.tenantId : undefined}
-              options={availableTenants.map((t) => ({ value: t.id, label: `${t.nombre} (${empresaMap[t.empresaId]?.nombreFantasia ?? ""})` }))}
-            />
+            {/* Tenant — predictive combobox */}
+            <div ref={tenantRef} className="flex flex-col gap-1">
+              <label className="block text-sm font-medium text-neutral-700">
+                Tenant asociado <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Buscar tenant por nombre o dominio..."
+                  value={selectedTenant && !tenantOpen ? `${selectedTenant.nombre}${empresaMap[selectedTenant.empresaId] ? ` (${empresaMap[selectedTenant.empresaId].nombreFantasia})` : ""}` : tenantQuery}
+                  onChange={(e) => { setTenantQuery(e.target.value); set("tenantId", ""); setTouched((p) => new Set([...p, "tenantId"])); }}
+                  onFocus={() => { setTenantOpen(true); if (selectedTenant) setTenantQuery(""); }}
+                  className={`h-[44px] w-full rounded-lg border px-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-primary-100 ${touched.has("tenantId") && errors.tenantId ? "border-red-400 bg-red-50" : "border-neutral-200 bg-white focus:border-primary-400"}`}
+                />
+                {tenantOpen && (
+                  <div className="absolute z-50 mt-1 w-full rounded-xl border border-neutral-200 bg-white shadow-xl max-h-64 overflow-y-auto">
+                    {tenantResults.length === 0 ? (
+                      <div className="px-4 py-3 text-sm text-neutral-400">Sin resultados</div>
+                    ) : tenantResults.map((t) => {
+                      const emp = empresaMap[t.empresaId];
+                      const hasContract = vigenteTenantIds.has(t.id);
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => { set("tenantId", t.id); setTenantQuery(""); setTouched((p) => new Set([...p, "tenantId"])); setTenantOpen(false); setErrors(validate({ ...form, tenantId: t.id })); }}
+                          className="w-full flex items-center justify-between gap-3 px-4 py-2.5 text-sm hover:bg-neutral-50 transition-colors text-left"
+                        >
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-medium text-neutral-900 truncate">{t.nombre}</span>
+                            {t.dominio && <span className="text-xs text-neutral-400 truncate">{t.dominio}</span>}
+                          </div>
+                          {hasContract && (
+                            <span className="shrink-0 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700">
+                              Contrato vigente
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+              {touched.has("tenantId") && errors.tenantId && (
+                <p className="text-xs text-red-500">{errors.tenantId}</p>
+              )}
+            </div>
+
+            {/* Override warning */}
+            {selectedTenantHasContract && overriddenContract && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 flex flex-col gap-1">
+                <p className="text-sm font-medium text-amber-800">Este tenant ya tiene un contrato vigente</p>
+                <p className="text-xs text-amber-700">
+                  Plan: <strong>{overriddenContract.planNombre ?? "Trial"}</strong> · Vence: <strong>{overriddenContract.fechaVencimiento}</strong>.
+                  Al guardar, el contrato anterior quedará sobreescrito y se registrará el monto pendiente en reportería.
+                </p>
+              </div>
+            )}
 
             {/* Cliente derivado */}
             {selectedEmpresa && (
@@ -210,10 +326,13 @@ function CrearContratoForm() {
 
             {/* Plan limits preview */}
             {isPagado && selectedPlan && (
-              <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 space-y-1">
+              <div className="flex items-start gap-2.5 rounded-lg bg-blue-50 px-4 py-3">
+                <IconInfoCircle size={18} className="text-blue-500 shrink-0 mt-0.5" />
+                <div className="space-y-1">
                 <p className="text-xs font-semibold text-blue-700">Límites del plan {selectedPlan.nombre}</p>
                 <p className="text-xs text-blue-600">Pedidos/mes: {selectedPlan.pedidosMax} · Sucursales: {selectedPlan.sucursalesMax}</p>
                 <p className="text-xs text-blue-600">Módulos: {selectedPlan.modulos.join(", ")}</p>
+                </div>
               </div>
             )}
 
@@ -243,25 +362,42 @@ function CrearContratoForm() {
 
             {/* Dates */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input
+              <DatePicker
                 label="Fecha de inicio"
                 required
-                type="date"
                 value={form.fechaInicio}
-                onChange={(e) => set("fechaInicio", e.target.value)}
-                onBlur={() => handleBlur("fechaInicio")}
+                onChange={(val) => { set("fechaInicio", val); handleBlur("fechaInicio"); }}
                 error={touched.has("fechaInicio") ? errors.fechaInicio : undefined}
               />
-              <Input
-                label={isTrial && trialEndDate ? `Fecha de vencimiento (Trial: ${trialEndDate})` : "Fecha de vencimiento"}
-                required
-                type="date"
-                value={form.fechaVencimiento}
-                onChange={(e) => set("fechaVencimiento", e.target.value)}
-                onBlur={() => handleBlur("fechaVencimiento")}
-                error={touched.has("fechaVencimiento") ? errors.fechaVencimiento : undefined}
-              />
+              {sinVencimiento ? (
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium text-neutral-700">Fecha de vencimiento</label>
+                  <div className="h-[44px] flex items-center px-3 rounded-lg border border-dashed border-neutral-200 bg-neutral-50">
+                    <span className="text-sm text-neutral-400 italic">Sin fecha de vencimiento</span>
+                  </div>
+                </div>
+              ) : (
+                <DatePicker
+                  label={isTrial && trialEndDate ? `Fecha de vencimiento (Trial: ${trialEndDate})` : "Fecha de vencimiento"}
+                  required
+                  value={form.fechaVencimiento}
+                  onChange={(val) => { set("fechaVencimiento", val); handleBlur("fechaVencimiento"); }}
+                  error={touched.has("fechaVencimiento") ? errors.fechaVencimiento : undefined}
+                />
+              )}
             </div>
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={sinVencimiento}
+                onClick={() => { setSinVencimiento(!sinVencimiento); if (!sinVencimiento) set("fechaVencimiento", ""); }}
+                className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${sinVencimiento ? "bg-primary-500" : "bg-neutral-300"}`}
+              >
+                <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform ${sinVencimiento ? "translate-x-4" : "translate-x-0.5"}`} />
+              </button>
+              <span className="text-sm text-neutral-600">Plan sin fecha de vencimiento</span>
+            </label>
 
             {/* Pricing — only if pagado */}
             {isPagado && (
@@ -365,7 +501,7 @@ function CrearContratoForm() {
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-1">Notas</label>
               <textarea
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 min-h-[80px]"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-base md:text-sm placeholder:text-neutral-500 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 min-h-[80px]"
                 placeholder="Condiciones especiales (máx. 1000 caracteres)"
                 maxLength={1000}
                 value={form.notas}
@@ -374,7 +510,7 @@ function CrearContratoForm() {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 pt-3">
+            <div className="fixed bottom-0 inset-x-0 bg-white border-t border-neutral-200 px-4 py-3 flex gap-3 md:relative md:inset-auto md:border-0 md:bg-transparent md:px-0 md:py-0 md:pt-3 z-20">
               <Button variant="secondary" className="flex-1" onClick={handleCancel}>
                 Cancelar
               </Button>
@@ -395,7 +531,72 @@ function CrearContratoForm() {
         confirmLabel="Descartar"
       />
 
-      <Toast open={toast} onClose={() => setToast(false)} type="success" title="¡Contrato creado!" message="El contrato se ha creado correctamente." />
+      {showSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="relative z-10 w-full max-w-md rounded-2xl bg-white shadow-xl mx-4 p-5 sm:p-6 flex flex-col gap-4 sm:gap-5 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 shrink-0">
+                <svg className="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-900">¡Contrato creado exitosamente!</h3>
+                <p className="text-sm text-neutral-500">El contrato ha sido registrado en el sistema.</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 space-y-2.5">
+              <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">Resumen</h4>
+              <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
+                <span className="text-neutral-500">Tenant</span>
+                <span className="font-medium text-neutral-900">{selectedTenant?.nombre ?? "—"}</span>
+                <span className="text-neutral-500">Cliente</span>
+                <span className="font-medium text-neutral-900">{selectedEmpresa?.nombreFantasia ?? "—"}</span>
+                <span className="text-neutral-500">Modo</span>
+                <span className="font-medium text-neutral-900">{form.billingMode === "pagado" ? "Pagado" : form.billingMode === "trial" ? "Trial" : "—"}</span>
+                {isPagado && selectedPlan && (
+                  <>
+                    <span className="text-neutral-500">Plan</span>
+                    <span className="font-medium text-neutral-900">{selectedPlan.nombre}</span>
+                  </>
+                )}
+                {isTrial && selectedTrialConfig && (
+                  <>
+                    <span className="text-neutral-500">Trial</span>
+                    <span className="font-medium text-neutral-900">{selectedTrialConfig.nombre}</span>
+                  </>
+                )}
+                <span className="text-neutral-500">Inicio</span>
+                <span className="font-medium text-neutral-900">{form.fechaInicio || "—"}</span>
+                <span className="text-neutral-500">Vencimiento</span>
+                <span className="font-medium text-neutral-900">{sinVencimiento ? "Sin vencimiento" : form.fechaVencimiento || "—"}</span>
+                {isPagado && montoBaseFinal != null && (
+                  <>
+                    <span className="text-neutral-500">Monto mensual</span>
+                    <span className="font-medium text-neutral-900">${montoBaseFinal.toLocaleString("es-CL")} {form.moneda}</span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2.5 rounded-lg bg-blue-50 px-4 py-3">
+              <IconInfoCircle size={18} className="text-blue-500 shrink-0 mt-0.5" />
+              <p className="text-sm text-blue-800">
+                <strong>Siguiente paso:</strong> Crea el usuario administrador para este tenant.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button variant="secondary" className="flex-1" onClick={() => router.push("/contratos")}>
+                Ir a contratos
+              </Button>
+              <Button className="flex-1" onClick={() => router.push(`/usuarios/crear?tenantId=${form.tenantId}&rol=Admin+Tenant`)}>
+                Crear Admin
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </MainLayout>
   );
 }

@@ -40,8 +40,8 @@ export default function EditarTenantPage({ params }: { params: Promise<{ id: str
     if (!f.nombre.trim()) e.nombre = "El nombre es obligatorio";
     else if (f.nombre.trim().length < 3) e.nombre = "Mínimo 3 caracteres";
     else if (f.nombre.trim().length > 100) e.nombre = "Máximo 100 caracteres";
-    if (!f.dominio.trim()) e.dominio = "El dominio es obligatorio";
-    else if (!/^[a-z0-9-]+(\.[a-z0-9-]+)*$/i.test(f.dominio.trim())) e.dominio = "Solo alfanuméricos, guiones y puntos";
+    if (!f.dominio.trim()) e.dominio = "El sitio web es obligatorio";
+    else if (!/^(https?:\/\/)?(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(f.dominio.trim())) e.dominio = "Ingresa una URL válida (ej: www.gohard.cl)";
     return e;
   };
 
@@ -90,7 +90,7 @@ export default function EditarTenantPage({ params }: { params: Promise<{ id: str
         />
 
         <div className="flex-1 px-4 sm:px-6 pb-6">
-          <div className="rounded-xl border border-neutral-200 bg-white p-6 space-y-5">
+          <div className="rounded-xl border border-neutral-200 bg-white p-6 space-y-5 pb-20 md:pb-6">
 
             {/* Cliente asociado — locked */}
             <div>
@@ -116,14 +116,14 @@ export default function EditarTenantPage({ params }: { params: Promise<{ id: str
             <Input
               label="Dominio / Subdominio"
               required
-              placeholder="Ej: empresa-cl.amplifica.io"
+              placeholder="Ej: www.gohard.cl"
               value={form.dominio}
               onChange={(e) => setForm({ ...form, dominio: e.target.value })}
               onBlur={() => handleBlur("dominio")}
               error={touched.has("dominio") ? errors.dominio : undefined}
             />
 
-            <div className="flex gap-3 pt-3">
+            <div className="fixed bottom-0 inset-x-0 bg-white border-t border-neutral-200 px-4 py-3 flex gap-3 md:relative md:inset-auto md:border-0 md:bg-transparent md:px-0 md:py-0 md:pt-3 z-20">
               <Button variant="secondary" className="flex-1" onClick={handleCancel}>
                 Cancelar
               </Button>

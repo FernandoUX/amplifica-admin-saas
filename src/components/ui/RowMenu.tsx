@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { MoreVertical } from "lucide-react";
+import { IconDotsVertical } from "@tabler/icons-react";
 
 export interface RowMenuAction {
   label: string;
@@ -16,9 +16,11 @@ interface RowMenuProps {
 
 export default function RowMenu({ actions }: RowMenuProps) {
   const [open, setOpen] = useState(false);
+  const [tooltip, setTooltip] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null);
 
   const updatePosition = useCallback(() => {
     if (!btnRef.current) return;
@@ -28,9 +30,10 @@ export default function RowMenu({ actions }: RowMenuProps) {
     const spaceBelow = window.innerHeight - rect.bottom;
     const openUp = spaceBelow < menuH + 8;
 
+    const clampedLeft = Math.max(16, Math.min(rect.right - menuW, window.innerWidth - menuW - 16));
     setPos({
-      top: openUp ? rect.top + window.scrollY - menuH - 4 : rect.bottom + window.scrollY + 4,
-      left: Math.min(rect.right + window.scrollX - menuW, window.innerWidth - menuW - 8),
+      top: openUp ? rect.top - menuH - 4 : rect.bottom + 4,
+      left: clampedLeft,
     });
   }, [actions.length]);
 
@@ -59,21 +62,49 @@ export default function RowMenu({ actions }: RowMenuProps) {
     };
   }, [open, updatePosition]);
 
+  const showTooltip = () => {
+    if (!btnRef.current) return;
+    const rect = btnRef.current.getBoundingClientRect();
+    setTooltipPos({
+      top: rect.top + window.scrollY - 30,
+      left: rect.left + window.scrollX + rect.width / 2,
+    });
+    setTooltip(true);
+  };
+
   return (
     <>
       <button
         ref={btnRef}
-        onClick={() => setOpen((v) => !v)}
-        className="flex h-6 w-6 items-center justify-center rounded-md text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
+        onClick={() => { setOpen((v) => !v); setTooltip(false); }}
+        onMouseEnter={showTooltip}
+        onMouseLeave={() => setTooltip(false)}
+        onFocus={showTooltip}
+        onBlur={() => setTooltip(false)}
+        className="flex h-[36px] w-[36px] items-center justify-center rounded-md text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
       >
-        <MoreVertical size={14} />
+        <IconDotsVertical size={16} />
       </button>
+
+      {tooltip && !open && tooltipPos && typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed z-[9999] pointer-events-none flex flex-col items-center"
+            style={{ top: tooltipPos.top - window.scrollY, left: tooltipPos.left - window.scrollX, transform: "translateX(-50%)" }}
+          >
+            <div className="rounded-md bg-neutral-800 px-2 py-1 text-[11px] font-medium text-white shadow-md whitespace-nowrap">
+              Acciones
+            </div>
+            <div style={{ width: 6, height: 6, background: "#262626", transform: "rotate(45deg)", marginTop: -3 }} />
+          </div>,
+          document.body
+        )}
 
       {open && pos && typeof document !== "undefined" &&
         createPortal(
           <div
             ref={menuRef}
-            className="fixed z-[9999] min-w-[150px] rounded-xl border border-neutral-200 bg-white py-1 shadow-lg animate-in fade-in zoom-in-95 duration-100"
+            className="fixed z-[9999] w-[180px] rounded-xl border border-neutral-200 bg-white py-1 shadow-lg animate-in fade-in zoom-in-95 duration-100"
             style={{
               top: pos.top - window.scrollY,
               left: pos.left - window.scrollX,

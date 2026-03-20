@@ -6,6 +6,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import { IconChevronDown } from "@tabler/icons-react";
 import { MOCK_EMPRESAS } from "@/lib/mock-data";
 
 const PAISES = ["Chile", "Colombia", "Perú", "Argentina", "México", "España", "Brasil", "Otro"];
@@ -19,7 +20,11 @@ function FieldLabel({ label, required }: { label: string; required?: boolean }) 
 }
 
 function selectClass() {
-  return "h-[44px] w-full rounded-lg border border-neutral-200 px-3 text-sm text-neutral-900 bg-white outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 appearance-none";
+  return "h-[44px] w-full rounded-lg border border-neutral-200 px-3 pr-8 text-sm text-neutral-900 bg-white outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100 appearance-none";
+}
+
+function SelectChevron() {
+  return <IconChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />;
 }
 
 function textareaClass() {
@@ -102,7 +107,7 @@ export default function EditarClientePage({ params }: { params: Promise<{ id: st
         title={`Editar: ${empresa.nombreFantasia}`}
       />
 
-      <div className="px-4 sm:px-6 pb-10">
+      <div className="px-4 sm:px-6 pb-20 md:pb-10">
         <div className="flex flex-col gap-6">
 
           {/* Datos de la empresa */}
@@ -118,9 +123,12 @@ export default function EditarClientePage({ params }: { params: Promise<{ id: st
               <Input label="ID Fiscal (RUT)" required value={form.idFiscal} onChange={(e) => set("idFiscal", e.target.value)} />
               <div>
                 <FieldLabel label="País" required />
-                <select className={selectClass()} value={form.pais} onChange={(e) => set("pais", e.target.value)}>
-                  {PAISES.map((p) => <option key={p} value={p}>{p}</option>)}
-                </select>
+                <div className="relative">
+                  <select className={selectClass()} value={form.pais} onChange={(e) => set("pais", e.target.value)}>
+                    {PAISES.map((p) => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                  <SelectChevron />
+                </div>
               </div>
             </div>
 
@@ -184,9 +192,9 @@ export default function EditarClientePage({ params }: { params: Promise<{ id: st
 
           {!valid && <p className="text-xs text-neutral-400">* Completa los campos obligatorios para continuar</p>}
 
-          <div className="flex gap-3 justify-end">
-            <Button variant="secondary" size="lg" onClick={handleCancel}>Cancelar</Button>
-            <Button size="lg" disabled={!valid} loading={loading} onClick={handleSubmit}>Guardar</Button>
+          <div className="fixed bottom-0 inset-x-0 bg-white border-t border-neutral-200 px-4 py-3 flex gap-3 md:relative md:inset-auto md:border-0 md:bg-transparent md:px-0 md:py-0 md:pt-3 md:justify-end z-20">
+            <Button variant="secondary" size="lg" className="flex-1 md:flex-initial" onClick={handleCancel}>Cancelar</Button>
+            <Button size="lg" className="flex-1 md:flex-initial" disabled={!valid} loading={loading} onClick={handleSubmit}>Guardar</Button>
           </div>
         </div>
       </div>

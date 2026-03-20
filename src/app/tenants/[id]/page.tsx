@@ -8,7 +8,7 @@ import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import { MOCK_TENANTS, MOCK_EMPRESAS, MOCK_CONTRATOS, MOCK_USUARIOS, MOCK_PLANES, MOCK_TRIAL_CONFIGS } from "@/lib/mock-data";
 import { useRole } from "@/lib/role-context";
-import { Pencil, Server, FileText, Users, Settings, ClipboardList, AlertTriangle, Plus } from "lucide-react";
+import { IconPencil as Pencil, IconServer as Server, IconFileText as FileText, IconUsers as Users, IconSettings as Settings, IconClipboardList as ClipboardList, IconAlertTriangle as AlertTriangle, IconPlus as Plus, IconChevronRight } from "@tabler/icons-react";
 
 /* ── Helpers ── */
 
@@ -76,12 +76,12 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
         <div className="px-4 sm:px-6 pt-5 pb-4">
           <nav className="flex items-center gap-1 text-xs text-neutral-400 mb-3">
             <Link href="/" className="hover:text-neutral-600">Inicio</Link>
-            <span>/</span>
+            <IconChevronRight size={12} className="text-neutral-400" />
             <Link href="/tenants" className="hover:text-neutral-600">Tenants</Link>
-            <span>/</span>
+            <IconChevronRight size={12} className="text-neutral-400" />
             <span>No encontrado</span>
           </nav>
-          <h1 className="text-xl font-bold text-neutral-900">Tenant no encontrado</h1>
+          <h1 className="text-2xl font-bold text-neutral-900">Tenant no encontrado</h1>
         </div>
       </MainLayout>
     );
@@ -95,9 +95,9 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
       <div className="px-4 sm:px-6 pt-5 pb-0">
         <nav className="flex items-center gap-1 text-xs text-neutral-400">
           <Link href="/" className="hover:text-neutral-600 transition-colors">Inicio</Link>
-          <span>/</span>
+          <IconChevronRight size={12} className="text-neutral-400" />
           <Link href="/tenants" className="hover:text-neutral-600 transition-colors">Tenants</Link>
-          <span>/</span>
+          <IconChevronRight size={12} className="text-neutral-400" />
           <span>{tenant.nombre}</span>
         </nav>
       </div>
@@ -127,7 +127,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-bold text-neutral-900">{tenant.nombre}</h1>
+              <h1 className="text-2xl font-bold text-neutral-900">{tenant.nombre}</h1>
               <Badge variant={statusVariant(tenant.operationalStatus) as never}>
                 {statusLabel(tenant.operationalStatus)}
               </Badge>
@@ -162,7 +162,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === tab
-                  ? "border-primary-500 text-primary-600"
+                  ? "border-primary-500 text-primary-600 tab-active"
                   : "border-transparent text-neutral-500 hover:text-neutral-700"
               }`}
             >
@@ -182,7 +182,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
               <h2 className="text-sm font-semibold text-neutral-700 mb-4">Datos del tenant</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="Nombre del tenant" value={tenant.nombre} />
-                <Field label="Dominio / Subdominio" value={tenant.dominio} />
+                <Field label="Subdominio" value={tenant.dominio} />
                 <Field label="ID interno" value={tenant.id} />
                 <Field label="Fecha de creación" value={new Date(tenant.fechaCreacion).toLocaleDateString("es-CL", { day: "2-digit", month: "long", year: "numeric" })} />
                 <Field label="Estado operativo">

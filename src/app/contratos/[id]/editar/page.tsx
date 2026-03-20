@@ -10,6 +10,7 @@ import Select from "@/components/ui/Select";
 import Badge from "@/components/ui/Badge";
 import Toast from "@/components/ui/Toast";
 import AlertModal from "@/components/ui/AlertModal";
+import DatePicker from "@/components/ui/DatePicker";
 import { MOCK_CONTRATOS, MOCK_TENANTS, MOCK_EMPRESAS, MOCK_PLANES, MOCK_TRIAL_CONFIGS } from "@/lib/mock-data";
 
 interface FormState {
@@ -113,6 +114,10 @@ export default function EditarContratoPage({ params }: { params: Promise<{ id: s
     if (!f.fechaInicio) e.fechaInicio = "La fecha de inicio es obligatoria";
     if (!f.fechaVencimiento) e.fechaVencimiento = "La fecha de vencimiento es obligatoria";
     else if (f.fechaInicio && f.fechaVencimiento <= f.fechaInicio) e.fechaVencimiento = "Debe ser posterior a la fecha de inicio";
+    else if (f.fechaInicio && f.fechaVencimiento) {
+      const diffDays = (new Date(f.fechaVencimiento).getTime() - new Date(f.fechaInicio).getTime()) / (1000 * 60 * 60 * 24);
+      if (diffDays < 15) e.fechaVencimiento = "Debe haber al menos 15 días entre inicio y vencimiento";
+    }
     if (isPagado) {
       if (!f.moneda) e.moneda = "La moneda es obligatoria";
       if (!f.montoBase) e.montoBase = "El monto base es obligatorio";
@@ -166,7 +171,7 @@ export default function EditarContratoPage({ params }: { params: Promise<{ id: s
         />
 
         <div className="flex-1 px-4 sm:px-6 pb-6">
-          <div className="rounded-xl border border-neutral-200 bg-white p-6 space-y-5">
+          <div className="rounded-xl border border-neutral-200 bg-white p-6 space-y-5 pb-20 md:pb-6">
 
             {/* Locked fields */}
             <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 space-y-3">
@@ -182,7 +187,7 @@ export default function EditarContratoPage({ params }: { params: Promise<{ id: s
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-neutral-500 mb-0.5">Modo de facturación</p>
-                  <Badge variant={isPagado ? "active" : "pending"}>{isPagado ? "Pagado" : "Trial"}</Badge>
+                  <Badge variant={isPagado ? "active" : "trial"}>{isPagado ? "Pagado" : "Trial"}</Badge>
                 </div>
               </div>
               {empresa && (
@@ -209,7 +214,7 @@ export default function EditarContratoPage({ params }: { params: Promise<{ id: s
 
             {/* Plan limits preview */}
             {isPagado && selectedPlan && (
-              <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 space-y-1">
+              <div className="rounded-lg bg-blue-50 px-4 py-3 space-y-1">
                 <p className="text-xs font-semibold text-blue-700">Límites del plan {selectedPlan.nombre}</p>
                 <p className="text-xs text-blue-600">Pedidos/mes: {selectedPlan.pedidosMax} · Sucursales: {selectedPlan.sucursalesMax}</p>
                 <p className="text-xs text-blue-600">Módulos: {selectedPlan.modulos.join(", ")}</p>
@@ -242,22 +247,18 @@ export default function EditarContratoPage({ params }: { params: Promise<{ id: s
 
             {/* Dates */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input
+              <DatePicker
                 label="Fecha de inicio"
                 required
-                type="date"
                 value={form.fechaInicio}
-                onChange={(e) => set("fechaInicio", e.target.value)}
-                onBlur={() => handleBlur("fechaInicio")}
+                onChange={(val) => { set("fechaInicio", val); handleBlur("fechaInicio"); }}
                 error={touched.has("fechaInicio") ? errors.fechaInicio : undefined}
               />
-              <Input
+              <DatePicker
                 label={isTrial && trialEndDate ? `Fecha de vencimiento (Trial: ${trialEndDate})` : "Fecha de vencimiento"}
                 required
-                type="date"
                 value={form.fechaVencimiento}
-                onChange={(e) => set("fechaVencimiento", e.target.value)}
-                onBlur={() => handleBlur("fechaVencimiento")}
+                onChange={(val) => { set("fechaVencimiento", val); handleBlur("fechaVencimiento"); }}
                 error={touched.has("fechaVencimiento") ? errors.fechaVencimiento : undefined}
               />
             </div>
@@ -364,7 +365,7 @@ export default function EditarContratoPage({ params }: { params: Promise<{ id: s
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-1">Notas</label>
               <textarea
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm placeholder:text-neutral-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 min-h-[80px]"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-base md:text-sm placeholder:text-neutral-500 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 min-h-[80px]"
                 placeholder="Condiciones especiales (máx. 1000 caracteres)"
                 maxLength={1000}
                 value={form.notas}
@@ -373,7 +374,7 @@ export default function EditarContratoPage({ params }: { params: Promise<{ id: s
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 pt-3">
+            <div className="fixed bottom-0 inset-x-0 bg-white border-t border-neutral-200 px-4 py-3 flex gap-3 md:relative md:inset-auto md:border-0 md:bg-transparent md:px-0 md:py-0 md:pt-3 z-20">
               <Button variant="secondary" className="flex-1" onClick={handleCancel}>
                 Cancelar
               </Button>

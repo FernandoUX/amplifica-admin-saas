@@ -1,0 +1,183 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Amplifica" [ref=e6]
+        - button "Colapsar sidebar" [ref=e7]:
+          - img [ref=e8]
+      - generic [ref=e11]: Menú
+      - navigation [ref=e12]:
+        - list [ref=e13]:
+          - listitem [ref=e14]:
+            - link "Clientes" [ref=e15] [cursor=pointer]:
+              - /url: /clientes
+              - img [ref=e16]
+              - generic [ref=e18]: Clientes
+          - listitem [ref=e19]:
+            - link "Tenants" [ref=e20] [cursor=pointer]:
+              - /url: /tenants
+              - img [ref=e21]
+              - generic [ref=e26]: Tenants
+          - listitem [ref=e27]:
+            - link "Contratos" [ref=e28] [cursor=pointer]:
+              - /url: /contratos
+              - img [ref=e29]
+              - generic [ref=e32]: Contratos
+          - listitem [ref=e33]:
+            - link "Usuarios" [ref=e34] [cursor=pointer]:
+              - /url: /usuarios
+              - img [ref=e35]
+              - generic [ref=e38]: Usuarios
+        - generic [ref=e39]: Reportería
+        - list [ref=e40]:
+          - listitem [ref=e41]:
+            - link "Reportes de uso" [ref=e42] [cursor=pointer]:
+              - /url: /reportes
+              - img [ref=e43]
+              - generic [ref=e46]: Reportes de uso
+          - listitem [ref=e47]:
+            - link "Registros de auditoría" [ref=e48] [cursor=pointer]:
+              - /url: /auditlog
+              - img [ref=e49]
+              - generic [ref=e52]: Registros de auditoría
+        - generic [ref=e53]: Planes
+        - list [ref=e54]:
+          - listitem [ref=e55]:
+            - link "Planes" [ref=e56] [cursor=pointer]:
+              - /url: /planes
+              - img [ref=e57]
+              - generic [ref=e60]: Planes
+      - generic [ref=e61]:
+        - button "SA Fernando Roblero Super Admin" [ref=e62]:
+          - generic [ref=e63]: SA
+          - generic [ref=e64]:
+            - generic [ref=e65]: Fernando Roblero
+            - generic [ref=e66]: Super Admin
+          - img [ref=e67]
+        - generic [ref=e70]:
+          - button "Modo oscuro" [ref=e71]:
+            - img [ref=e72]
+            - text: Modo oscuro
+          - button "Cerrar sesión" [ref=e74]:
+            - img [ref=e75]
+            - text: Cerrar sesión
+    - main [ref=e80]:
+      - generic [ref=e81]:
+        - navigation [ref=e83]:
+          - link "Inicio" [ref=e85] [cursor=pointer]:
+            - /url: /
+          - generic [ref=e86]:
+            - img [ref=e87]
+            - link "Clientes" [ref=e89] [cursor=pointer]:
+              - /url: /clientes
+          - generic [ref=e90]:
+            - img [ref=e91]
+            - generic [ref=e93]: Crear cliente
+        - generic [ref=e95]:
+          - heading "Crear cliente" [level=1] [ref=e96]
+          - paragraph [ref=e97]: Complete los datos para registrar un nuevo cliente.
+        - generic [ref=e99]:
+          - generic [ref=e100]:
+            - heading "Datos de la empresa" [level=2] [ref=e101]
+            - generic [ref=e102]:
+              - generic [ref=e103]:
+                - generic [ref=e104]:
+                  - generic [ref=e105]: Nombre de fantasía*
+                  - textbox "Nombre comercial visible" [ref=e106]
+                - paragraph [ref=e176]: Mínimo 2 caracteres
+              - generic [ref=e107]:
+                - generic [ref=e108]:
+                  - generic [ref=e109]: Razón Social*
+                  - textbox "Razón social legal" [ref=e110]
+                - paragraph [ref=e177]: Mínimo 3 caracteres
+            - generic [ref=e111]:
+              - generic [ref=e112]:
+                - generic [ref=e113]: País*
+                - generic [ref=e114]:
+                  - combobox [ref=e115]:
+                    - option "Seleccionar país"
+                    - option "Chile" [selected]
+                    - option "Colombia"
+                    - option "Perú"
+                    - option "Argentina"
+                    - option "México"
+                    - option "España"
+                    - option "Brasil"
+                    - option "Otro"
+                  - img
+              - generic [ref=e116]:
+                - generic [ref=e117]:
+                  - generic [ref=e118]: RUT*
+                  - textbox "12345678-9" [ref=e182]: "123"
+                - paragraph [ref=e178]: "Formato: 12345678-9"
+            - generic [ref=e120]:
+              - generic [ref=e121]:
+                - generic [ref=e122]: Región
+                - generic [ref=e123]:
+                  - combobox [ref=e124]:
+                    - option "Seleccionar región" [selected]
+                    - option "Metropolitana"
+                    - option "Valparaíso"
+                    - option "Biobío"
+                    - option "Araucanía"
+                    - option "Los Lagos"
+                    - option "O'Higgins"
+                    - option "Maule"
+                    - option "Coquimbo"
+                    - option "Antofagasta"
+                    - option "Tarapacá"
+                    - option "Atacama"
+                    - option "Los Ríos"
+                    - option "Aysén"
+                    - option "Magallanes"
+                    - option "Arica y Parinacota"
+                    - option "Ñuble"
+                  - img
+              - generic [ref=e125]:
+                - generic [ref=e126]: Comuna
+                - textbox "Selecciona región primero" [disabled] [ref=e127]
+            - generic [ref=e128]:
+              - generic [ref=e129]: Giro comercial
+              - textbox "Ej. Comercio electrónico" [ref=e130]
+            - generic [ref=e131]:
+              - generic [ref=e132]: Dirección
+              - generic [ref=e133]:
+                - img
+                - textbox "Buscar dirección..." [ref=e134]
+          - generic [ref=e135]:
+            - heading "Contacto comercial" [level=2] [ref=e136]
+            - generic [ref=e137]:
+              - generic [ref=e138]:
+                - generic [ref=e139]:
+                  - generic [ref=e140]: Nombre*
+                  - textbox "Nombre del contacto" [ref=e141]
+                - paragraph [ref=e179]: Campo requerido
+              - generic [ref=e142]:
+                - generic [ref=e143]: Cargo
+                - textbox "Ej. CEO, Dir. Comercial" [ref=e144]
+            - generic [ref=e145]:
+              - generic [ref=e146]:
+                - generic [ref=e147]:
+                  - generic [ref=e148]: Correo*
+                  - textbox "contacto@empresa.com" [ref=e149]
+                - paragraph [ref=e180]: Ingrese un correo válido
+              - generic [ref=e150]:
+                - generic [ref=e151]: Teléfono
+                - textbox "+56 9 1234 5678" [ref=e152]
+          - generic [ref=e153]:
+            - heading "Contacto de pagos y finanzas" [level=2] [ref=e154]
+            - generic [ref=e155] [cursor=pointer]:
+              - checkbox "Mismo que contacto comercial" [checked] [ref=e156]
+              - generic [ref=e157]: Mismo que contacto comercial
+          - generic [ref=e158]:
+            - heading "Notas internas" [level=2] [ref=e159]
+            - generic [ref=e160]:
+              - generic [ref=e161]: Notas
+              - textbox "Notas visibles solo para el equipo de Amplifica…" [ref=e162]
+          - paragraph [ref=e163]: "* Completa los campos obligatorios para continuar"
+          - generic [ref=e164]:
+            - button "Cancelar" [ref=e165] [cursor=pointer]
+            - button "Guardar" [active] [ref=e166] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e172] [cursor=pointer]:
+    - img [ref=e173]
+  - alert [ref=e181]

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { X } from "lucide-react";
+import { IconX } from "@tabler/icons-react";
 
 interface ModalProps {
   open: boolean;
@@ -48,7 +48,7 @@ export default function Modal({ open, onClose, title, subtitle, children, width 
             onClick={onClose}
             className="ml-4 flex h-7 w-7 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
           >
-            <X size={16} />
+            <IconX size={16} />
           </button>
         </div>
 

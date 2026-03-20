@@ -9,7 +9,7 @@ import Badge from "@/components/ui/Badge";
 import { MOCK_CONTRATOS, MOCK_TENANTS, MOCK_EMPRESAS, MOCK_PLANES, MOCK_TRIAL_CONFIGS } from "@/lib/mock-data";
 import { Contrato } from "@/lib/types";
 import { useRole } from "@/lib/role-context";
-import { Pencil } from "lucide-react";
+import { IconPencil as Pencil, IconChevronRight } from "@tabler/icons-react";
 
 /* ── Helpers ── */
 
@@ -52,12 +52,12 @@ export default function ContratoDetailPage({ params }: { params: Promise<{ id: s
         <div className="px-4 sm:px-6 pt-5 pb-4">
           <nav className="flex items-center gap-1 text-xs text-neutral-400 mb-3">
             <Link href="/" className="hover:text-neutral-600">Inicio</Link>
-            <span>/</span>
+            <IconChevronRight size={12} className="text-neutral-400" />
             <Link href="/contratos" className="hover:text-neutral-600">Contratos</Link>
-            <span>/</span>
+            <IconChevronRight size={12} className="text-neutral-400" />
             <span>No encontrado</span>
           </nav>
-          <h1 className="text-xl font-bold text-neutral-900">Contrato no encontrado</h1>
+          <h1 className="text-2xl font-bold text-neutral-900">Contrato no encontrado</h1>
         </div>
       </MainLayout>
     );
@@ -77,9 +77,9 @@ export default function ContratoDetailPage({ params }: { params: Promise<{ id: s
       <div className="px-4 sm:px-6 pt-5 pb-0">
         <nav className="flex items-center gap-1 text-xs text-neutral-400">
           <Link href="/" className="hover:text-neutral-600 transition-colors">Inicio</Link>
-          <span>/</span>
+          <IconChevronRight size={12} className="text-neutral-400" />
           <Link href="/contratos" className="hover:text-neutral-600 transition-colors">Contratos</Link>
-          <span>/</span>
+          <IconChevronRight size={12} className="text-neutral-400" />
           <span>{contrato.displayId}</span>
         </nav>
       </div>
@@ -92,9 +92,9 @@ export default function ContratoDetailPage({ params }: { params: Promise<{ id: s
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-bold text-neutral-900 font-mono">{contrato.displayId}</h1>
+              <h1 className="text-2xl font-bold text-neutral-900 font-mono">{contrato.displayId}</h1>
               <Badge variant={estado.variant as never}>{estado.label}</Badge>
-              <Badge variant={isPagado ? "active" : "pending"}>{isPagado ? "Pagado" : "Trial"}</Badge>
+              <Badge variant={isPagado ? "active" : "trial"}>{isPagado ? "Pagado" : "Trial"}</Badge>
             </div>
             <p className="text-sm text-neutral-500 mt-0.5 truncate">
               {tenant?.nombre ?? "—"} · {empresa?.nombreFantasia ?? "—"}
@@ -122,7 +122,7 @@ export default function ContratoDetailPage({ params }: { params: Promise<{ id: s
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Nº de contrato" value={contrato.displayId} />
             <Field label="Billing mode">
-              <Badge variant={isPagado ? "active" : "pending"}>{isPagado ? "Pagado" : "Trial"}</Badge>
+              <Badge variant={isPagado ? "active" : "trial"}>{isPagado ? "Pagado" : "Trial"}</Badge>
             </Field>
             <Field label="Tenant asociado">
               <button

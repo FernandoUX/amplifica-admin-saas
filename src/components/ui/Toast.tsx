@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { CheckCircle, AlertCircle, X } from "lucide-react";
+import { IconCircleCheck, IconAlertCircle, IconX } from "@tabler/icons-react";
 
 type ToastType = "success" | "error" | "warning";
 
@@ -15,9 +15,9 @@ interface ToastProps {
 }
 
 const icons: Record<ToastType, React.ReactNode> = {
-  success: <CheckCircle size={16} className="text-emerald-600" />,
-  error:   <AlertCircle size={16} className="text-red-600" />,
-  warning: <AlertCircle size={16} className="text-amber-600" />,
+  success: <IconCircleCheck size={16} className="text-emerald-600" />,
+  error:   <IconAlertCircle size={16} className="text-red-600" />,
+  warning: <IconAlertCircle size={16} className="text-amber-600" />,
 };
 
 const borderColors: Record<ToastType, string> = {
@@ -57,7 +57,7 @@ export default function Toast({
           onClick={onClose}
           className="ml-1 flex h-6 w-6 items-center justify-center rounded-md text-neutral-400 hover:bg-neutral-100 transition-colors"
         >
-          <X size={13} />
+          <IconX size={13} />
         </button>
       </div>
     </div>

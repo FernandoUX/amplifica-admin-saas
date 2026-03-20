@@ -8,7 +8,7 @@ import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import { MOCK_EMPRESAS, MOCK_TENANTS, MOCK_CONTRATOS, MOCK_USUARIOS } from "@/lib/mock-data";
 import { useRole } from "@/lib/role-context";
-import { Pencil, Building2 } from "lucide-react";
+import { IconPencil as Pencil, IconBuilding as Building2, IconChevronRight } from "@tabler/icons-react";
 
 const COUNTRY_FLAG: Record<string, string> = {
   Chile: "🇨🇱", Colombia: "🇨🇴", Perú: "🇵🇪",
@@ -34,8 +34,8 @@ const estadoVariant = (e: string) => {
 function Field({ label, value }: { label: string; value?: string }) {
   return (
     <div>
-      <p className="text-xs font-semibold text-neutral-500 mb-0.5">{label}</p>
-      <p className="text-sm text-neutral-900">{value || "—"}</p>
+      <p className="text-sm font-semibold text-neutral-500 mb-0.5">{label}</p>
+      <p className="text-base text-neutral-900">{value || "—"}</p>
     </div>
   );
 }
@@ -61,12 +61,12 @@ export default function ClienteDetailPage({ params }: { params: Promise<{ id: st
         <div className="px-4 sm:px-6 pt-5 pb-4">
           <nav className="flex items-center gap-1 text-xs text-neutral-400 mb-3">
             <Link href="/" className="hover:text-neutral-600">Inicio</Link>
-            <span>/</span>
+            <IconChevronRight size={12} className="text-neutral-400" />
             <Link href="/clientes" className="hover:text-neutral-600">Clientes</Link>
-            <span>/</span>
+            <IconChevronRight size={12} className="text-neutral-400" />
             <span>No encontrado</span>
           </nav>
-          <h1 className="text-xl font-bold text-neutral-900">Cliente no encontrado</h1>
+          <h1 className="text-2xl font-bold text-neutral-900">Cliente no encontrado</h1>
         </div>
       </MainLayout>
     );
@@ -80,9 +80,9 @@ export default function ClienteDetailPage({ params }: { params: Promise<{ id: st
       <div className="px-4 sm:px-6 pt-5 pb-0">
         <nav className="flex items-center gap-1 text-xs text-neutral-400">
           <Link href="/" className="hover:text-neutral-600 transition-colors">Inicio</Link>
-          <span>/</span>
+          <IconChevronRight size={12} className="text-neutral-400" />
           <Link href="/clientes" className="hover:text-neutral-600 transition-colors">Clientes</Link>
-          <span>/</span>
+          <IconChevronRight size={12} className="text-neutral-400" />
           <span>{empresa.nombreFantasia}</span>
         </nav>
       </div>
@@ -97,7 +97,7 @@ export default function ClienteDetailPage({ params }: { params: Promise<{ id: st
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-bold text-neutral-900">{empresa.nombreFantasia}</h1>
+              <h1 className="text-2xl font-bold text-neutral-900">{empresa.nombreFantasia}</h1>
               <Badge variant={statusVariant(empresa.operationalStatus) as never}>
                 {statusLabel(empresa.operationalStatus)}
               </Badge>
@@ -127,7 +127,7 @@ export default function ClienteDetailPage({ params }: { params: Promise<{ id: st
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === tab
-                  ? "border-primary-500 text-primary-600"
+                  ? "border-primary-500 text-primary-600 tab-active"
                   : "border-transparent text-neutral-500 hover:text-neutral-700"
               }`}
             >
@@ -144,7 +144,7 @@ export default function ClienteDetailPage({ params }: { params: Promise<{ id: st
         {activeTab === "Información general" && (
           <>
             <section className="rounded-xl border border-neutral-200 bg-white p-5">
-              <h2 className="text-sm font-semibold text-neutral-700 mb-4">Datos de la empresa</h2>
+              <h2 className="text-lg font-semibold text-neutral-700 mb-4">Datos de la empresa</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="Nombre de fantasía" value={empresa.nombreFantasia} />
                 <Field label="Razón Social" value={empresa.razonSocial} />
@@ -156,7 +156,7 @@ export default function ClienteDetailPage({ params }: { params: Promise<{ id: st
             </section>
 
             <section className="rounded-xl border border-neutral-200 bg-white p-5">
-              <h2 className="text-sm font-semibold text-neutral-700 mb-4">Contacto comercial</h2>
+              <h2 className="text-lg font-semibold text-neutral-700 mb-4">Contacto comercial</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="Nombre" value={empresa.contactoComercial.nombre} />
                 <Field label="Cargo" value={empresa.contactoComercial.cargo} />
@@ -197,7 +197,7 @@ export default function ClienteDetailPage({ params }: { params: Promise<{ id: st
             )}
 
             <section className="rounded-xl border border-neutral-200 bg-white p-5">
-              <h2 className="text-sm font-semibold text-neutral-700 mb-4">Datos del sistema</h2>
+              <h2 className="text-lg font-semibold text-neutral-700 mb-4">Datos del sistema</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="Fecha de creación" value={new Date(empresa.fechaCreacion).toLocaleDateString("es-CL", { day: "2-digit", month: "long", year: "numeric" })} />
                 <div>
