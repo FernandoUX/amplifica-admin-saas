@@ -131,7 +131,7 @@ export default function Sidebar({ onClose }: SidebarProps = {}) {
       }}
     >
       {/* Logo + collapse toggle */}
-      <div className={`flex items-center ${isCollapsed ? "justify-center px-2" : "justify-between px-4"} pt-5 ${onClose ? "pb-0" : "pb-6"}`}>
+      <div className={`flex items-center ${isCollapsed ? "justify-center px-2" : "justify-between px-4"} pt-5 ${onClose ? "pb-4" : "pb-6"}`}>
         {!onClose ? (
           <>
             {isCollapsed ? (
